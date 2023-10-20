@@ -265,16 +265,22 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 Since all the attributes in our schema are atomic, our schema is in 1NF.
 
 ### 2NF
-Our database is in 2NF because there is no partial dependency in our schema. The attributes in all tables fully depend on the primary key of the table, and we have conducted necessary measures to prevent the violation of 2NF as we said in previous sections. Our database is also in 1NF, so it is in 2NF.
+A database is not in 2NF if there is a partial dependency in the schema. A partial dependency means that a non-key attribute depends on only a part of the primary key but not the whole primary key.
+
+Our database is in 2NF because there is no partial dependency in our schema. The attributes in all tables fully depend on the primary key of the table, and we have conducted necessary measures to prevent the violation of 2NF as we said in previous sections. (Put `course_dept` as a separate relation.) And since our database is also in 1NF, so it is in 2NF.
 
 ### 3NF
+A database is not in 3NF if there is a transitive dependency in the schema and the non-key attribute that is depended on is not a super key. A transitive dependency means that a non-key attribute depends on another non-key attribute.
+
 Our database is in 3NF because there is no transitive dependency in our schema. The attributes in all tables do not depend on any non-key attribute. Since our database is in 2NF, it is in 3NF.
 
 ### BCNF
+A database is not in BCNF if there is a non-trivial functional dependency that depends on a non-super key in the schema. A non-trivial functional dependency means that the dependent attribute is not a subset of the determinant attribute. A non-super key means that the determinant attribute is not a super key.
+
 Our database is in BCNF because there is no non-trivial functional dependency that depends on a non-super key in our schema. The attributes in all tables do not depend on any non-key attribute. Since our database is in 3NF, it is in BCNF.
 
 ### 4NF
-There is no multi-valued dependency in our schema. Therefore, our database is in 4NF.
+A database is not in 4NF if there is a multi-valued dependency in the schema. There is no multi-valued dependency in our schema. Therefore, our database is in 4NF.
 
  
 
