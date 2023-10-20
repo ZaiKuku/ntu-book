@@ -1,5 +1,11 @@
 # Schema Design
 
+![Schema Diagram](./image/DB_Final.png)
+
+The above diagram is the schema diagram of our database. The format of the diagram is a bit different from the textbook. Below is the legend of the diagram. In the example below, `example1.attr1` references `example2.attr2`. It is equivalent to pointing an arrow from `example1.attr1` to `example2.attr2` if we follow the format in our textbook.
+
+![Legend](./image/legend.png)
+
 ## SQL that creates the tables
 
 ```sql
