@@ -178,8 +178,8 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
-| UsedBookID: `usedBook.UsedBookID` | No Action | Cascade |
-| Buyer: `users.StudentID` | No Action | Cascade |
+| UsedBookID: `usedBook.UsedBookID` | Restrict | Cascade |
+| Buyer: `users.StudentID` | Restrict | Cascade |
 
 ### purchaseRequest
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
