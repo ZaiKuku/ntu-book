@@ -32,12 +32,16 @@ CREATE TABLE "purchaseRequest" (
 
 CREATE TABLE "book" (
   "ISBN" integer PRIMARY KEY,
-  "Author" varchar,
   "Title" varchar,
   "Genre" varchar,
   "Edition" varchar,
   "Publisher" varchar,
   "SuggestedRetailPrice" integer
+);
+
+CREATE TABLE "author" (
+  "BookID" integer PRIMARY KEY,
+  "Author" varchar
 );
 
 CREATE TABLE "course" (
@@ -107,3 +111,5 @@ ALTER TABLE "rating" ADD FOREIGN KEY ("RatedStudent") REFERENCES "users" ("Stude
 ALTER TABLE "comment" ADD FOREIGN KEY ("UsedBookID") REFERENCES "usedBook" ("UsedBookID");
 
 ALTER TABLE "comment" ADD FOREIGN KEY ("Commenter") REFERENCES "users" ("StudentID");
+
+ALTER TABLE "author" ADD FOREIGN KEY ("BookID") REFERENCES "book" ("ISBN");

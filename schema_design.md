@@ -37,12 +37,16 @@ CREATE TABLE "purchaseRequest" (
 
 CREATE TABLE "book" (
   "ISBN" integer PRIMARY KEY,
-  "Author" varchar,
   "Title" varchar,
   "Genre" varchar,
   "Edition" varchar,
   "Publisher" varchar,
   "SuggestedRetailPrice" integer
+);
+
+CREATE TABLE "author" (
+  "BookID" integer PRIMARY KEY,
+  "Author" varchar
 );
 
 CREATE TABLE "course" (
@@ -113,12 +117,14 @@ ALTER TABLE "comment" ADD FOREIGN KEY ("UsedBookID") REFERENCES "usedBook" ("Use
 
 ALTER TABLE "comment" ADD FOREIGN KEY ("Commenter") REFERENCES "users" ("StudentID");
 
+ALTER TABLE "author" ADD FOREIGN KEY ("BookID") REFERENCES "book" ("ISBN");
+
 ```
 ## Schema Design
 
 In this section, we will discuss the schema design of our database. We will also discuss the rationale behind our design choices.
 
-Our schema consists of 9 tables: `users`, `usedBook`, `purchase`, `purchaseRequest`, `book`, `course`, `courseDept`, `textbook`, `rating`, and `comment`. The `users` table stores information about the users of our application. The `usedBook` table stores information about the used books that are posted for sale. The `purchase` table stores information about the purchase event of a customer purchasing a used book. The `purchaseRequest` table stores information about the books that are requested to be purchased. The `book` table stores information about all the books in our database. The `course` table stores information about all the courses offered by NTU. The `courseDept` table stores information about which department a course belongs to. The `textbook` table stores information about which books are assigned to which courses. The `rating` table stores information about user ratings, and the `comment` table stores user comments for a used book selling post.
+Our schema consists of 11 tables: `users`, `usedBook`, `purchase`, `purchaseRequest`, `book`, `author`, `course`, `courseDept`, `textbook`, `rating`, and `comment`. The `users` table stores information about the users of our application. The `usedBook` table stores information about the used books that are posted for sale. The `purchase` table stores information about the purchase event of a customer purchasing a used book. The `purchaseRequest` table stores information about the books that are requested to be purchased. The `book` table stores information about all the books in our database. The `author` table stores information about authors. The `course` table stores information about all the courses offered by NTU. The `courseDept` table stores information about which department a course belongs to. The `textbook` table stores information about which books are assigned to which courses. The `rating` table stores information about user ratings, and the `comment` table stores user comments for a used book selling post.
 
 The primary key of `users` is `StudentID`, which is the student ID in NTU.
 
@@ -129,6 +135,8 @@ The relation `purchase` was derived from the relation `purchased` in ER diagram,
 The `purchaseRequest` relation is also derived from `request_to_buy` and M to N relation in the ER diagram. The primary key of `purchaseRequest` is a combination of `Buyer` and `UsedBookID`, which is the student ID of the requester and the ID of the used book post. The `purchaseRequest` relation has a reference to `Buyer` in `users` table and a reference to `UsedBookID` in `usedBook` table.
 
 The primary key of `book` is `ISBN`, which is the ISBN of the book.
+
+The primary key of `author` is `BookID`, which is the ISBN of the book. The `BookID` attribute in `author` has a reference to `ISBN` in `book` table. We separate `author` into a separate table because a book can have multiple authors. We separate it for normalization purposes.
 
 The primary key of `course` is a combination of `CourseID` and `Semester`, which is the serial number and the semester of the course. Although a course may have multiple instructors, in our schema design, since we import the data directly from NTU's course data, we only store one instructor for each course since the NTU's course data only store one instructor in the instructor column. 
 
@@ -156,12 +164,17 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
 | ISBN | ISBN of the book | integer | Primary Key | Not Null | A valid ISBN number |
-| Author | Author of the book | varchar | | Not Null | |
 | Title | Title of the book | varchar | | Not Null | |
 | Genre | Genre of the book | varchar | | Not Null | |
 | Edition | Edition of the book | varchar | | Not Null | |
 | Publisher | Publisher of the book | varchar | | Not Null | |
 | SuggestedRetailPrice | Suggested retail price of the book | integer | | Not Null | |
+
+### author
+| Column name | Meaning | Data Type | Key | Constraint | Domain |
+| --- | --- | --- | --- | --- | --- |
+| BookID | ISBN of the book | integer | Primary Key, Foreign Key (`book.ISBN`) | Not Null | A valid ISBN number |
+| Author | Author of the book | varchar | | Not Null | |
 
 ### usedBook
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
