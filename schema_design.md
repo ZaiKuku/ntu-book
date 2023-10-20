@@ -145,12 +145,23 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 ### users
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
-| StudentID | Student ID of the user | varchar | Primary Key | Not Null | 9 digits |
-| SchoolEmail | School email of the user | varchar | | Not Null | |
+| StudentID | Student ID of the user | varchar | Primary Key | Not Null | In accordance with NTU's student ID format |
+| SchoolEmail | School email of the user | varchar | | Not Null | A valid email address |
 | Username | Username of the user | varchar | | Not Null | |
 | Fname | First name of the user | varchar | | Not Null | |
 | Lname | Last name of the user | varchar | | Not Null | |
 | Password | Hash of the password of the user | varchar | | Not Null | |
+
+### book
+| Column name | Meaning | Data Type | Key | Constraint | Domain |
+| --- | --- | --- | --- | --- | --- |
+| ISBN | ISBN of the book | integer | Primary Key | Not Null | A valid ISBN number |
+| Author | Author of the book | varchar | | Not Null | |
+| Title | Title of the book | varchar | | Not Null | |
+| Genre | Genre of the book | varchar | | Not Null | |
+| Edition | Edition of the book | varchar | | Not Null | |
+| Publisher | Publisher of the book | varchar | | Not Null | |
+| SuggestedRetailPrice | Suggested retail price of the book | integer | | Not Null | |
 
 ### usedBook
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
@@ -158,11 +169,11 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 | UsedBookID | ID of the used book post | integer | Primary Key | Not Null | |
 | AdditionalDetails | Additional details about the book | varchar | | Not Null | |
 | BookPicture | URL of the book picture | varchar | | Not Null | |
-| BookCondition | Condition of the book | integer | | Not Null | 1-5 |
-| Seller | Student ID of the user who posted the book | varchar | Foreign Key (`users.StudentID`) | Not Null | |
+| BookCondition | Condition of the book | integer | | Not Null | 1-3 (nearly new, with minor damage, with major damage) |
+| Seller | Student ID of the user who posted the book | varchar | Foreign Key (`users.StudentID`) | Not Null | In accordance with NTU's student ID format |
 | ListTime | Time of the post | timestamp | | Not Null | |
 | AskingPrice | Price of the book | integer | | Not Null | |
-| BookID | ISBN of the book | integer | Foreign Key (`book.ISBN`) | Not Null | |
+| BookID | ISBN of the book | integer | Foreign Key (`book.ISBN`) | Not Null | A valid ISBN number |
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
@@ -173,7 +184,7 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
 | UsedBookID | ID of the used book post | integer | Primary Key, Foreign Key (`usedBook.UsedBookID`) | Not Null | |
-| Buyer | Student ID of the user who purchased the book | varchar | Foreign Key (`users.StudentID`) | Not Null | |
+| Buyer | Student ID of the user who purchased the book | varchar | Foreign Key (`users.StudentID`) | Not Null | In accordance with NTU's student ID format |
 | PurchaseTime | Time of the purchase | timestamp | | Not Null | |
 
 | Referential Triggers | On Delete | On Update |
@@ -184,24 +195,13 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 ### purchaseRequest
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
-| Buyer | Student ID of the user who requested to buy the book | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | |
+| Buyer | Student ID of the user who requested to buy the book | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | In accordance with NTU's student ID format |
 | UsedBookID | ID of the used book post | integer | Primary Key, Foreign Key (`usedBook.UsedBookID`) | Not Null | |
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
 | Buyer: `users.StudentID` | Cascade | Cascade |
 | UsedBookID: `usedBook.UsedBookID` | Cascade | Cascade |
-
-### book
-| Column name | Meaning | Data Type | Key | Constraint | Domain |
-| --- | --- | --- | --- | --- | --- |
-| ISBN | ISBN of the book | integer | Primary Key | Not Null | Required to be a valid ISBN number |
-| Author | Author of the book | varchar | | Not Null | |
-| Title | Title of the book | varchar | | Not Null | |
-| Genre | Genre of the book | varchar | | Not Null | |
-| Edition | Edition of the book | varchar | | Not Null | |
-| Publisher | Publisher of the book | varchar | | Not Null | |
-| SuggestedRetailPrice | Suggested retail price of the book | integer | | Not Null | |
 
 ### course
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
@@ -227,7 +227,7 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
 | CourseID | Course ID of the course | varchar | Primary Key, Foreign Key (`course.CourseID`) | Not Null | |
-| BookID | ISBN of the book | integer | Primary Key, Foreign Key (`book.ISBN`) | Not Null | |
+| BookID | ISBN of the book | integer | Primary Key, Foreign Key (`book.ISBN`) | Not Null | A valid ISBN number |
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
@@ -237,8 +237,8 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 ### rating
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
-| Rater | Student ID of the user providing the rating | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | |
-| RatedStudent | Student ID of the user being rated | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | |
+| Rater | Student ID of the user providing the rating | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | In accordance with NTU's student ID format |
+| RatedStudent | Student ID of the user being rated | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | In accordance with NTU's student ID format |
 | StarsCount | Number of stars in the rating | integer | | Not Null | |
 | Comment | Additional comment in the rating | varchar | | | |
 
@@ -251,7 +251,7 @@ The `comment` table stores user comments. The `UsedBookID` attribute in the `com
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
 | UsedBookID | ID of the used book post | integer | Primary Key, Foreign Key (`usedBook.UsedBookID`) | Not Null | |
-| Commenter | Student ID of the user leaving the comment | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | |
+| Commenter | Student ID of the user leaving the comment | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | In accordance with NTU's student ID format |
 | Comment | The comment left by the user | varchar | | | |
 
 | Referential Triggers | On Delete | On Update |
