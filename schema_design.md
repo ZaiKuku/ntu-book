@@ -118,7 +118,7 @@ ALTER TABLE "comment" ADD FOREIGN KEY ("Commenter") REFERENCES "users" ("Student
 
 In this section, we will discuss the schema design of our database. We will also discuss the rationale behind our design choices.
 
-Our schema consists of 9 tables: `users`, `usedBook`, `purchase`, `purchaseRequest`, `book`, `course`, `courseDept`, `textbook`, `rating`, and `comment`. The `users` table stores information about the users of our application. The `usedBook` table stores information about the used books that are posted for sale. The `purchase` table stores information about the purchase event of a customer purchasing a used book. The `purchaseRequest` table stores information about the books that are requested to be purchased. The `book` table stores information about all the books in our database. The `course` table stores information about all the courses offered by NTU. The `courseDept` table stores information about which department a course belongs to. The `textbook` table stores information about which books are assigned to which courses. The `rating` table stores information about user ratings, and the `comment` table stores user comments.
+Our schema consists of 9 tables: `users`, `usedBook`, `purchase`, `purchaseRequest`, `book`, `course`, `courseDept`, `textbook`, `rating`, and `comment`. The `users` table stores information about the users of our application. The `usedBook` table stores information about the used books that are posted for sale. The `purchase` table stores information about the purchase event of a customer purchasing a used book. The `purchaseRequest` table stores information about the books that are requested to be purchased. The `book` table stores information about all the books in our database. The `course` table stores information about all the courses offered by NTU. The `courseDept` table stores information about which department a course belongs to. The `textbook` table stores information about which books are assigned to which courses. The `rating` table stores information about user ratings, and the `comment` table stores user comments for a used book selling post.
 
 The primary key of `users` is `StudentID`, which is the student ID in NTU.
 
@@ -130,13 +130,15 @@ The `purchaseRequest` relation is also derived from `request_to_buy` and M to N 
 
 The primary key of `book` is `ISBN`, which is the ISBN of the book.
 
-The primary key of `course` is a combination of `CourseID` and `Semester`, which is the serial number and the semester of the course.
+The primary key of `course` is a combination of `CourseID` and `Semester`, which is the serial number and the semester of the course. Although a course may have multiple instructors, in our schema design, since we import the data directly from NTU's course data, we only store one instructor for each course since the NTU's course data only store one instructor in the instructor column. 
 
-The primary key of `courseDept` is a combination of `CourseID`, `DepartmentName`, and `Semester`, which is the serial number, the department name, and the semester of the course. The `CourseID` attribute in `courseDept` has a reference to `CourseID` in `course` table. The `Semester` attribute in `courseDept` has a reference to `Semester` in `course` table. The `DepartmentName` attribute in `courseDept` has a reference to `DepartmentName` in `course` table. We separate `courseDept` into a separate table because a course can belong to multiple departments. If we make `DepartmentName` part of the original `course` table, then the candidate keys will be `CourseID`, `Semester`, and `DepartmentName`, since this is the only way to determine a tuple in the database due to the rule of NTU. However, the `InstructorName` attribute only depends on `CourseID` and `Semester` (a different instructor will lead to a different serial number due to NTU course regulations), so if we do not make `courseDept` a separate table, our database will violate 2NF. And since it is very common for a course to belong to different departments, we consider it necessary to conduct normalization.
+The primary key of `courseDept` is a combination of `CourseID`, `DepartmentName`, and `Semester`, which is the serial number （流水號 in Chinese）, the department name, and the semester of the course. The `CourseID` attribute in `courseDept` has a reference to `CourseID` in `course` table. The `Semester` attribute in `courseDept` has a reference to `Semester` in `course` table. We separate `courseDept` into a separate table because a course can belong to multiple departments. If we make `DepartmentName` part of the original `course` table and split the different department name into different columns (like what we see in `nol.ntu.edu.tw`), then the candidate keys will be `CourseID`, `Semester`, and `DepartmentName`, since this is the only way to determine a tuple in the database due to the rule of NTU. However, the `InstructorName` attribute only depends on `CourseID` and `Semester` (a different instructor will lead to a different serial number due to NTU's course ID coding rules), so if we do not make `courseDept` a separate table, our database will violate 2NF. And since it is very common for a course to belong to different departments, we consider it necessary to conduct normalization.
 
 The primary key of `textbook` is a combination of `CourseID` and `BookID`, which is the course ID and the ISBN of the book. The `CourseID` attribute in `textbook` has a reference to `CourseID` in `course` table. The `BookID` attribute in `textbook` has a reference to `ISBN` in `book` table.
 
-The `rating` table stores information about user ratings, and the `comment` table stores user comments. The `Rater` attribute in the `rating` table has a reference to `StudentID` in the `users` table, and the `RatedStudent` attribute in the `rating` table also has a reference to `StudentID` in the `users` table. The `UsedBookID` attribute in the `comment` table has a reference to the `UsedBookID` in the `usedBook` table, and the `Commenter` attribute in the `comment` table has a reference to `StudentID` in the `users` table.
+The `rating` table stores information about user ratings. The `Rater` attribute in the `rating` table has a reference to `StudentID` in the `users` table, and the `RatedStudent` attribute in the `rating` table also has a reference to `StudentID` in the `users` table. 
+
+The `comment` table stores user comments. The `UsedBookID` attribute in the `comment` table has a reference to the `UsedBookID` in the `usedBook` table, and the `Commenter` attribute in the `comment` table has a reference to `StudentID` in the `users` table.
 
 ## Data Dictionary
 
@@ -164,8 +166,8 @@ The `rating` table stores information about user ratings, and the `comment` tabl
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
-| `users.StudentID` | Cascade | Cascade |
-| `book.ISBN` | Cascade | Cascade |
+| Seller: `users.StudentID` | Cascade | Cascade |
+| BookID: `book.ISBN` | Cascade | Cascade |
 
 ### purchase
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
@@ -176,7 +178,8 @@ The `rating` table stores information about user ratings, and the `comment` tabl
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
-| `usedBook.UsedBookID` | No Action | Cascade |
+| UsedBookID: `usedBook.UsedBookID` | No Action | Cascade |
+| Buyer: `users.StudentID` | No Action | Cascade |
 
 ### purchaseRequest
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
@@ -186,8 +189,8 @@ The `rating` table stores information about user ratings, and the `comment` tabl
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
-| `users.StudentID` | Cascade | Cascade |
-| `usedBook.UsedBookID` | Cascade | Cascade |
+| Buyer: `users.StudentID` | Cascade | Cascade |
+| UsedBookID: `usedBook.UsedBookID` | Cascade | Cascade |
 
 ### book
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
@@ -212,13 +215,13 @@ The `rating` table stores information about user ratings, and the `comment` tabl
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
 | CourseID | Serial number of the course | integer | Primary Key, Foreign Key (`course.CourseID`) | Not Null | |
-| Semester | Semester of the course | varchar | Primary Key | Not Null | |
+| Semester | Semester of the course | varchar | Primary Key, Foreign Key (`course.Semester`) | Not Null | |
 | DepartmentName | Department of the course | varchar | Primary Key | Not Null | |
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
-| `course.CourseID` | Cascade | Cascade |
-| `course.Semester` | Cascade | Cascade |
+| CourseID: `course.CourseID` | Cascade | Cascade |
+| Semester: `course.Semester` | Cascade | Cascade |
 
 ### textbook
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
@@ -228,8 +231,8 @@ The `rating` table stores information about user ratings, and the `comment` tabl
 
 | Referential Triggers | On Delete | On Update |
 | --- | --- | --- |
-| `course.CourseID` | Cascade | Cascade |
-| `book.ISBN` | Cascade | Cascade |
+| CourseID: `course.CourseID` | Cascade | Cascade |
+| BookID: `book.ISBN` | Cascade | Cascade |
 
 ### rating
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
@@ -239,6 +242,11 @@ The `rating` table stores information about user ratings, and the `comment` tabl
 | StarsCount | Number of stars in the rating | integer | | Not Null | |
 | Comment | Additional comment in the rating | varchar | | | |
 
+| Referential Triggers | On Delete | On Update |
+| --- | --- | --- |
+| Rater: `users.StudentID` | Cascade | Cascade |
+| RatedStudent: `users.StudentID` | Cascade | Cascade |
+
 ### comment
 | Column name | Meaning | Data Type | Key | Constraint | Domain |
 | --- | --- | --- | --- | --- | --- |
@@ -246,13 +254,18 @@ The `rating` table stores information about user ratings, and the `comment` tabl
 | Commenter | Student ID of the user leaving the comment | varchar | Primary Key, Foreign Key (`users.StudentID`) | Not Null | |
 | Comment | The comment left by the user | varchar | | | |
 
+| Referential Triggers | On Delete | On Update |
+| --- | --- | --- |
+| UsedBookID: `usedBook.UsedBookID` | Cascade | Cascade |
+| Commenter: `users.StudentID` | Cascade | Cascade |
+
 ## Analysis of schema normalization
 
 ### 1NF
 Since all the attributes in our schema are atomic, our schema is in 1NF.
 
 ### 2NF
-Our database is in 2NF because there is no partial dependency in our schema. The attributes in all tables fully depend on the primary key of the table, and we have conducted necessary measures to prevent the violation of 2NF. Our database is also in 1NF, so it is in 2NF.
+Our database is in 2NF because there is no partial dependency in our schema. The attributes in all tables fully depend on the primary key of the table, and we have conducted necessary measures to prevent the violation of 2NF as we said in previous sections. Our database is also in 1NF, so it is in 2NF.
 
 ### 3NF
 Our database is in 3NF because there is no transitive dependency in our schema. The attributes in all tables do not depend on any non-key attribute. Since our database is in 2NF, it is in 3NF.
