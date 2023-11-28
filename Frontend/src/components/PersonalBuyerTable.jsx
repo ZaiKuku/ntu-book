@@ -17,9 +17,9 @@ import {
   Input,
 } from "@material-tailwind/react";
 import { useState } from "react";
- 
-const TABLE_HEAD = ["Listed Books", "Price", "Order Placed Date", "Status",  ""];
- 
+
+const TABLE_HEAD = ["Listed Books", "Price", "Order Placed Date", "Status", ""];
+
 const TABLE_ROWS = [
   {
     img: "/b2.jpg",
@@ -30,27 +30,27 @@ const TABLE_ROWS = [
   },
   {
     img: "/b2.jpg",
-    title: "Title",
+    title: "Title2",
     amount: "$5,000",
     date: "Wed 1:00pm",
     status: "pending",
   },
   {
     img: "/b2.jpg",
-    title: "Title",
+    title: "Title3",
     amount: "$3,400",
     date: "Mon 7:40pm",
     status: "Finished",
   },
   {
     img: "/b2.jpg",
-    title: "Title",
+    title: "Title4",
     amount: "$3,400",
     date: "Mon 7:40pm",
     status: "Outdated",
   },
 ];
- 
+
 export default function PersonalBuyerTable() {
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
   return (
@@ -96,87 +96,81 @@ export default function PersonalBuyerTable() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(
-              (
-                {
-                  img,
-                  title,
-                  amount,
-                  date,
-                  status,
+            {TABLE_ROWS.map(({ img, title, amount, date, status }, index) => {
+              const isLast = index === TABLE_ROWS.length - 1;
+              const classes = isLast
+                ? "p-4"
+                : "p-4 border-b border-blue-gray-50";
 
-                },
-                index,
-              ) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
- 
-                return (
-                  <tr key={title}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={img}
-                          alt={title}
-                          size="md"
-                          className="border border-blue-gray-50 bg-blue-gray-50/50 object-fit p-1"
-                        />
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {title}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
+              return (
+                <tr key={title}>
+                  <td className={classes}>
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        src={img}
+                        alt={title}
+                        size="md"
+                        className="border border-blue-gray-50 bg-blue-gray-50/50 object-fit p-1"
+                      />
                       <Typography
                         variant="small"
                         color="blue-gray"
-                        className="font-normal"
+                        className="font-bold"
                       >
-                        {amount}
+                        {title}
                       </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {amount}
+                    </Typography>
+                  </td>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {date}
+                    </Typography>
+                  </td>
+                  <td className={classes}>
+                    <div className="w-max">
+                      <Chip
+                        size="sm"
+                        variant="ghost"
+                        value={status}
+                        color={
+                          status === "Finished"
+                            ? "green"
+                            : status === "pending"
+                            ? "amber"
+                            : status === "Denied"
+                            ? "red"
+                            : "gray"
+                        }
+                      />
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    {status === "Finished" && (
+                      <Button
+                        size="sm"
+                        className="bg-[#787878]"
+                        onClick={() => setOpenCommentDialog(true)}
                       >
-                        {date}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          size="sm"
-                          variant="ghost"
-                          value={status}
-                          color={
-                            status === "Finished"
-                              ? "green"
-                              : status === "pending"
-                              ? "amber"
-                              : status === "Denied"
-                              ? "red"
-                              : "lightBlue"
-                          }
-                        />
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      {status === "Finished" && <Button size="sm" className="bg-[#787878]" onClick={() => setOpenCommentDialog(true)}> 
                         Rating
-                      </Button>}
-                    </td>
-                  </tr>
-                );
-              },
-            )}
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </CardBody>

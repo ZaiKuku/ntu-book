@@ -9,22 +9,11 @@ import {
 
 export default function BookCard({
   Title,
-  Edition,
-  PublisherName,
   AuthorName,
   Genre,
   LowestPrice,
   HighestPrice,
 }) {
-  console.log(
-    Title,
-    Edition,
-    PublisherName,
-    AuthorName,
-    Genre,
-    LowestPrice,
-    HighestPrice
-  );
   return (
     <Card className="w-56 h-96 flex items-center">
       <CardHeader floated={false} className="h-56 w-full">

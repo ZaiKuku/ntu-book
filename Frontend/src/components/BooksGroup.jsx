@@ -63,24 +63,21 @@ export default function BooksGroup() {
   };
   const bookcards = bookcarditems.data.map((bookcarditem) => {
     return (
-      console.log(bookcarditem.ISBN),
-      (
-        <div
-          className="hover:scale-105 transform transition duration-300 ease-in-out hover:cursor-pointer"
-          onClick={() => handleToProductPage(bookcarditem.ISBN)}
-        >
-          <BookCard
-            key={bookcarditem.ISBN}
-            Title={bookcarditem.Title}
-            Edition={bookcarditem.Edition}
-            PublisherName={bookcarditem.PublisherName}
-            AuthorName={bookcarditem.AuthorName}
-            Genre={bookcarditem.Genre}
-            LowestPrice={bookcarditem.LowestPrice}
-            HighestPrice={bookcarditem.HighestPrice}
-          />
-        </div>
-      )
+      <div
+        className="hover:scale-105 transform transition duration-300 ease-in-out hover:cursor-pointer"
+        onClick={() => handleToProductPage(bookcarditem.ISBN)}
+        key={bookcarditem.ISBN}
+      >
+        <BookCard
+          Title={bookcarditem.Title}
+          Edition={bookcarditem.Edition}
+          PublisherName={bookcarditem.PublisherName}
+          AuthorName={bookcarditem.AuthorName}
+          Genre={bookcarditem.Genre}
+          LowestPrice={bookcarditem.LowestPrice}
+          HighestPrice={bookcarditem.HighestPrice}
+        />
+      </div>
     );
   });
 

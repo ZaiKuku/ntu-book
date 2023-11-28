@@ -6,12 +6,11 @@ import {
   Button,
   List,
   ListItem,
-  ListItemPrefix,
   Input,
   Select,
   Option,
 } from "@material-tailwind/react";
-import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+
 import { useDispatch } from "react-redux";
 import { setOpenLogin } from "../redux/openLogin";
 import { useRouter } from "next/router";
@@ -100,15 +99,15 @@ export default function NavbarNTU() {
             </Button>
           </div>
           <div className="flex items-center gap-x-1">
-            {/* <Button
+            <Button
               variant="gradient"
               size="sm"
               className="hidden lg:inline-block"
               onClick={handleOpen}
             >
               <span>Log In</span>
-            </Button> */}
-            <UserButton />
+            </Button>
+            {/* <UserButton /> */}
           </div>
         </div>
       </div>

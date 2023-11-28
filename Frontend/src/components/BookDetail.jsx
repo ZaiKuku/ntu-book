@@ -81,7 +81,7 @@ export default function BookDetail() {
   const [comment, setComment] = useState("");
 
   const comments = CommentData.map((comment) => (
-    <ListItem>
+    <ListItem key={comment.CommenterID + comment.CommentTimestamp}>
       <ListItemPrefix>
         <Avatar variant="circular" alt="candice" src="/user.png" />
       </ListItemPrefix>
