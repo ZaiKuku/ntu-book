@@ -40,18 +40,6 @@ await client.connect()
       console.log(`Server running on port http://localhost:${port}`),
     );
     console.log("Connected to PostgreSQL server");
-
-
-    app.get('/', async (req, res) => {
-      try {
-        const result = await db.query('SELECT * FROM users');
-        res.json(result.rows);
-      } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
-      }
-    });
-    
   })
   .catch((error) => {
     // Catch any errors that occurred while starting the server
