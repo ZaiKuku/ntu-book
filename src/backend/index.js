@@ -2,6 +2,8 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import pg from "pg";
+const { Client } = pg;
 
 // Routes
 import usersRouter from "./routes/users.js";
@@ -21,4 +23,27 @@ app.use("/api/book", bookRouter);
 
 const port = process.env.PORT || 8000;
 
-// TODO: Connect to PostgreSQL
+// Connect to PostgreSQL
+const client = new Client({
+  host: process.env.PGHOST,
+  user: process.env.DB_USER,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
+  connectionTimeoutMillis: 5000,
+});
+
+await client.connect()
+  .then(() => {
+    // Successfully connected to PostgreSQL server
+    app.listen(port, () =>
+      console.log(`Server running on port http://localhost:${port}`),
+    );
+    console.log("Connected to PostgreSQL server");
+  })
+  .catch((error) => {
+    // Catch any errors that occurred while starting the server
+    console.log(error.message);
+  });
+
+export const db = client;
