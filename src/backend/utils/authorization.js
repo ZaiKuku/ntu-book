@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 async function authorization(req, res, next) {
 
