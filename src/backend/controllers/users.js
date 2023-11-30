@@ -84,7 +84,69 @@ function updateProfile(req, res) {
 }
 
 function getProfile(req, res) {
+    // Request params: id
+    // Method GET
+    // /users/:id/public
+    /*
+    Successful Response Example:
 
+    {
+  "data": {
+      "StudentID": "b12345678",
+      "Username": "johndoe",
+      "AverageRating": 4.5,
+      "Ratings": [
+				{
+	        "StudentID": "b12345687",
+					"StarsCount": 5,
+	        "Review": "Good",
+				},
+				{
+	        "StudentID": "b12345699",
+					"StarsCount": 4, 
+	        "Review": "Nice Book",
+				},
+			]
+	  }
+}
+    */
+
+    let result;
+
+    const user_id = req.params.id;
+
+    model.getUser('StudentID', user_id).then((user) => {
+        if (!user) {
+            return res.status(400).send('User does not exist');
+        }
+
+        result = {
+            data: {
+                StudentID: user.StudentID,
+                Username: user.Username,
+            }
+        }
+
+    }).catch((err) => {
+        console.log(err);
+        return res.status(500).send('Internal server error');
+    });
+
+    //Another function in model to get ratings
+
+    model.getRating(user_id).then((rating) => {
+        if (!rating) {
+            return res.status(400).send('User does not exist');
+        }
+
+        result.data.AverageRating = rating.AverageRating;
+        result.data.Ratings = rating.Ratings;
+
+        return res.status(200).json(result);
+    }).catch((err) => {
+        console.log(err);
+        return res.status(500).send('Internal server error');
+    });
 
 }
 
