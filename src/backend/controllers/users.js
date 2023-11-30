@@ -1,5 +1,6 @@
 import generateJWT from '../utils/authorization';
 import hashPassword from '../utils/authorization';
+import model from "../model/users.js";
 
 async function signup(req, res) {
 
@@ -70,7 +71,7 @@ function updateProfile(req, res) {
 
     let user_id = req.authorization_id;
 
-    model.updateUser(user_id, req.body.StudentID, req.body.SchoolEmail, req.body.Username, req.body.Fname, req.body.Lname, hashPassword(req.body.Password)).then((result) => {
+    model.updateUser(req.body.StudentID, req.body.SchoolEmail, req.body.Username, req.body.Fname, req.body.Lname, hashPassword(req.body.Password)).then((result) => {
         if (!result) {
             return res.status(500).send('Internal server error');
         }
