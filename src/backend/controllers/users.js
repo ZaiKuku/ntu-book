@@ -1,14 +1,13 @@
-import generateJWT from '../utils/authorization';
-import hashPassword from '../utils/authorization';
+import { generateJWT, hashPassword} from '../utils/authorization.js';
 import model from "../model/users.js";
 
-async function signup(req, res) {
+export async function signup(req, res) {
 
     if (!req.body.StudentID || !req.body.SchoolEmail || !req.body.Username || !req.body.Fname || !req.body.Lname || !req.body.Password) {
         return res.status(400).send('Missing value');
     }
 
-    if (!req.body.SchoolEmail.match(/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/)) {
+    if (!req.body.SchoolEmail.match(/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z.]+$/)) {
         return res.status(400).send('Invalid email format');
     }
 
@@ -24,13 +23,13 @@ async function signup(req, res) {
         return res.status(500).send('Internal server error');
     }
 
-    const result = await generateJWT(user_id);
+    const result = await generateJWT(req.body.StudentID);
 
     return res.status(200).send({ data: { 'Token': result } });
 
 }
 
-function signin(req, res) {
+export function signin(req, res) {
 
     if (!req.body.StudentID || !req.body.Password) {
         return res.status(400).send('Missing value');
@@ -47,7 +46,7 @@ function signin(req, res) {
 
         const result = {
             data: {
-                Token: generateJWT(user.id)
+                Token: generateJWT(req.body.StudentID)
             }
         }
         return res.status(200).json(result);
@@ -58,32 +57,44 @@ function signin(req, res) {
 
 }
 
-function updateProfile(req, res) {
+export function updateProfile(req, res) {
 
 
-    if (!req.body.StudentID || !req.body.SchoolEmail || !req.body.Username || !req.body.Fname || !req.body.Lname || !req.body.Password) {
+    if (!req.body.StudentID) {
         return res.status(400).send('Missing value');
     }
 
-    if (!req.body.SchoolEmail.match(/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/)) {
+    if (req.body.SchoolEmail && !req.body.SchoolEmail.match(/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z.]+$/)) {
         return res.status(400).send('Invalid email format');
     }
 
     let user_id = req.authorization_id;
 
-    model.updateUser(req.body.StudentID, req.body.SchoolEmail, req.body.Username, req.body.Fname, req.body.Lname, hashPassword(req.body.Password)).then((result) => {
+
+    if (user_id != req.body.StudentID) {
+        //No permission to update other user's profile
+        return res.status(403).send('Forbidden');
+    }
+
+    let newPassword = null;
+    if (req.body.Password) {
+        newPassword = hashPassword(req.body.Password);
+    }
+
+
+    model.updateUser(req.body.StudentID, req.body.SchoolEmail, req.body.Username, req.body.Fname, req.body.Lname, newPassword).then((result) => {
         if (!result) {
             return res.status(500).send('Internal server error');
         }
         return res.status(200).json({ data: result });
     }).catch((err) => {
-        console.log(err);
         return res.status(500).send('Internal server error');
     });
 
 }
 
-function getProfile(req, res) {
+//Not yet tested
+export function getProfile(req, res) {
     // Request params: id
     // Method GET
     // /users/:id/public
@@ -150,9 +161,8 @@ function getProfile(req, res) {
 
 }
 
-module.exports = {
-    signup,
-    signin,
-    updateProfile,
-    getProfile
+//To be implemented
+export function getPrivateProfile(req, res) {
+    
+
 }

@@ -25,14 +25,17 @@ function getUser(column, value) {
 
 function createUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
 
+    //Captalize StudentID
+    StudentID = StudentID.toUpperCase();
+
     const query = {
-        text: `INSERT INTO users (StudentID, SchoolEmail, Username, Fname, Lname, Password) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        text: `INSERT INTO users (StudentID, SchoolEmail, Username, Fname, Lname, Password) VALUES ($1, $2, $3, $4, $5, $6)`,
         values: [StudentID, SchoolEmail, Username, Fname, Lname, Password],
     };
 
     return db.query(query)
         .then((result) => {
-            return result.rows[0].id;
+            return result[0].StudentID;;
         })
         .catch((err) => {
             console.log(err);
@@ -41,33 +44,33 @@ function createUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
 
 }
 
-function updateUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
+async function updateUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
     // If an attribute is NULL or undefined, do not overwrite the existing column with None, just keep the original value
 
-    const currentUser = getUser('StudentID', StudentID);
+    const currentUser = await getUser('StudentID', StudentID);
 
     if (currentUser == null) {
         return null;
     }
 
     if (SchoolEmail == null) {
-        SchoolEmail = currentUser.SchoolEmail;
+        SchoolEmail = currentUser.schoolemail;
     }
 
     if (Username == null) {
-        Username = currentUser.Username;
+        Username = currentUser.username;
     }
 
     if (Fname == null) {
-        Fname = currentUser.Fname;
+        Fname = currentUser.fname;
     }
 
     if (Lname == null) {
-        Lname = currentUser.Lname;
+        Lname = currentUser.lname;
     }
 
     if (Password == null) {
-        Password = currentUser.Password;
+        Password = currentUser.password;
     }
 
     const query = {

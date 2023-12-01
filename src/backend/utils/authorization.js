@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 
-async function authorization(req, res, next) {
+export async function authorization(req, res, next) {
 
     const failedResponse = { error: 'Wrong Token' };
 
@@ -36,7 +36,7 @@ async function authorization(req, res, next) {
     next();
 };
 
-function generateJWT(user_id) {
+export function generateJWT(user_id) {
 
     // Secret key for JWT encryption
     const secretKey = process.env.JWT_KEY;
@@ -50,13 +50,6 @@ function generateJWT(user_id) {
     return accessToken;
 }
 
-function hashPassword(password) {
-    return crypto.createHash('sha256').update(password).digest('base64');
+export function hashPassword(password) {
+    return crypto.createHash('sha256').update(password).digest('base64').substring(0, 30);
 }
-
-module.exports = {
-    authorization,
-    generateJWT,
-    hashPassword
-};
-
