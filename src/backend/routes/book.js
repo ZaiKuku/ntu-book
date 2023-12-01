@@ -1,9 +1,10 @@
 import {
   addBook,
+  addTextBookInfo,
   deleteBook,
-  getBookInfoAndUsedBooks, 
+  getBookInfoAndUsedBooks,
   searchBooks,
-  updateBookDetails
+  updateBookDetails,
 } from "../controllers/book.js";
 import express from "express";
 
@@ -19,8 +20,8 @@ router.get("", searchBooks);
 // GET /api/book/:id
 router.get("/:id", getBookInfoAndUsedBooks);
 
-// POST /api/book/?
-router.post("", );
+// POST /api/book/textbook
+router.post("/textbook", addTextBookInfo);
 
 // POST /api/book
 router.post("", addBook);
