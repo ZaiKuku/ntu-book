@@ -83,40 +83,29 @@ export function updateProfile(req, res) {
     });
 }
 
-export function getProfile(req, res) {
-    let result;
+export async function getProfile(req, res) {
+    let result = {};
 
     const user_id = req.params.id;
 
-    model.getUser('StudentID', user_id).then((user) => {
-        if (!user) {
-            return res.status(404).json({ error: 'User does not exist' });
-        }
+    let user = await model.getUser('StudentID', user_id);
+    if (!user) {
+        return res.status(404).json({ error: 'User does not exist' });
+    }
 
-        result = {
-            data: {
-                StudentID: user.StudentID,
-                Username: user.Username,
-            }
-        };
-    }).catch((err) => {
-        console.log(err);
-        return res.status(500).json({ error: 'Internal server error' });
-    });
+    result.StudentID = user.studentid;
+    result.Username = user.username;
 
-    model.getRating(user_id).then((rating) => {
-        if (!rating) {
-            return res.status(404).json({ error: 'User does not exist' });
-        }
+    let rating = await model.getRating(user_id);
 
-        result.data.AverageRating = rating.AverageRating;
-        result.data.Ratings = rating.Ratings;
+    if (!rating) {
+        return res.status(404).json({ error: 'User does not exist' });
+    }
 
-        return res.status(200).json(result);
-    }).catch((err) => {
-        console.log(err);
-        return res.status(500).json({ error: 'Internal server error' });
-    });
+    result.AverageRating = rating.AverageRating;
+    result.Ratings = rating.Ratings;
+
+    return res.status(200).json({data: result});
 }
 
 export function getPrivateProfile(req, res) {
