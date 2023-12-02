@@ -1,6 +1,6 @@
 import {
-    signup,
-    signin,
+    signUp,
+    signIn,
     updateProfile,
     getProfile,
     getPrivateProfile
@@ -15,11 +15,11 @@ const router = express.Router();
 
 // POST /users/register
 
-router.post("/register", signup);
+router.post("/register", signUp);
 
 // POST /users/signin
 
-router.post("/signin", signin);
+router.post("/signin", signIn);
 
 // PUT /users/edit
 
