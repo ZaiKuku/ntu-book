@@ -9,7 +9,7 @@ export const searchBooks = async (req, res) => {
   if (!bookName && !authorName && !courseName && !deptCode && !isbn) {
     return res
       .status(400)
-      .json({ message: "At least one search parameter is required." });
+      .json({ error: "At least one search parameter is required." });
   }
 
   // I am not sure the below SQL is correct or not
@@ -61,7 +61,7 @@ export const searchBooks = async (req, res) => {
     );
     return res.status(200).json({ data: books });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -70,7 +70,7 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
   if (!id) {
     return res
       .status(400)
-      .json({ message: "ID of the book (ISBN) is required." });
+      .json({ error: "ID of the book (ISBN) is required." });
   }
 
   try {
@@ -80,7 +80,7 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
       WHERE b.ISBN = '${id}'
     `);
     if (bookInfoQuery.rows.length === 0) {
-      return res.status(404).json({ message: "Book not found." });
+      return res.status(404).json({ error: "Book not found." });
     }
     const bookInfo = bookInfoQuery.rows[0];
 
@@ -124,7 +124,7 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -133,7 +133,7 @@ export const addTextBookInfo = async (req, res) => {
 
   const { BookID, SerialNumber, Semester } = req.body;
   if (!BookID || !SerialNumber || !Semester) {
-    return res.status(400).json({ message: "All fields are required." });
+    return res.status(400).json({ error: "All fields are required." });
   }
 
   try {
@@ -143,7 +143,7 @@ export const addTextBookInfo = async (req, res) => {
     if (checkBook.rows.length === 0) {
       return res
         .status(404)
-        .json({ message: "Book with that ISBN does not exist." });
+        .json({ error: "Book with that ISBN does not exist." });
     }
 
     const checkCourse = await db.query(`
@@ -153,7 +153,7 @@ export const addTextBookInfo = async (req, res) => {
       return res
         .status(404)
         .json({
-          message: "Course with that SerialNumber and Semester does not exist.",
+          error: "Course with that SerialNumber and Semester does not exist.",
         });
     }
 
@@ -167,7 +167,7 @@ export const addTextBookInfo = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -184,7 +184,7 @@ export const addBook = async (req, res) => {
     !PublisherName ||
     !SuggestedRetailPrice
   ) {
-    return res.status(400).json({ message: "All fields are required." });
+    return res.status(400).json({ error: "All fields are required." });
   }
 
   try {
@@ -206,7 +206,7 @@ export const addBook = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -223,7 +223,7 @@ export const updateBookDetails = async (req, res) => {
     !PublisherName &&
     !SuggestedRetailPrice
   ) {
-    return res.status(400).json({ message: "At least one field is required." });
+    return res.status(400).json({ error: "At least one field is required." });
   }
 
   if (ISBN || Title || AuthorName || PublisherName || SuggestedRetailPrice) {
@@ -243,7 +243,7 @@ export const updateBookDetails = async (req, res) => {
         WHERE ISBN = '${id}'
       `);
     } catch (error) {
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
@@ -260,7 +260,7 @@ export const updateBookDetails = async (req, res) => {
         `);
       }
     } catch (error) {
-      return res.status(500).json({ message: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
@@ -286,6 +286,6 @@ export const deleteBook = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
