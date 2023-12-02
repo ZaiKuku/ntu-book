@@ -79,8 +79,14 @@ async function updateUser(StudentID, SchoolEmail, Username, Fname, Lname, Passwo
     };
 
     return db.query(query)
-        .then((result) => {
-            return result.rowCount;
+        .then(() => {
+            return {
+                StudentID: StudentID,
+                SchoolEmail: SchoolEmail,
+                Username: Username,
+                Fname: Fname,
+                Lname: Lname
+            };
         })
         .catch((err) => {
             console.log(err);

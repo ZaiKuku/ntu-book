@@ -61,9 +61,6 @@ export function signIn(req, res) {
 }
 
 export function updateProfile(req, res) {
-    if (!req.body.StudentID) {
-        return res.status(400).json({ error: 'Missing value' });
-    }
 
     if (req.body.SchoolEmail && !check_email(req.body.SchoolEmail)) {
         return res.status(400).json({ error: 'Invalid email format' });
@@ -71,16 +68,12 @@ export function updateProfile(req, res) {
 
     let user_id = req.authorization_id;
 
-    if (user_id != req.body.StudentID) {
-        return res.status(403).json({ error: 'Forbidden' });
-    }
-
     let newPassword = null;
     if (req.body.Password) {
         newPassword = hashPassword(req.body.Password);
     }
 
-    model.updateUser(req.body.StudentID, req.body.SchoolEmail, req.body.Username, req.body.Fname, req.body.Lname, newPassword).then((result) => {
+    model.updateUser(user_id, req.body.SchoolEmail, req.body.Username, req.body.Fname, req.body.Lname, newPassword).then((result) => {
         if (!result) {
             return res.status(500).json({ error: 'Internal server error' });
         }
