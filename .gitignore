@@ -1,5 +1,7 @@
 *.pdf
 node_modules
 .env
+package.json
+package-lock.json
 .env*.local
 .DS_Store
