@@ -1,5 +1,12 @@
 import { db } from "../index.js";
 
+// input formatting
+export function toLowerCase(req, res, next) {
+  if (req.authorization_id)
+    req.authorization_id = req.authorization_id.toLowerCase();
+  next();
+}
+
 // Get used book details
 export const getUsedBook = async (req, res) => {
   const { id: usedBookId } = req.params;
@@ -19,7 +26,7 @@ export const getUsedBook = async (req, res) => {
         AdditionalDetails: usedBook.additionaldetails,
         BookPicture: usedBook.bookpicture,
         BookCondition: usedBook.bookcondition,
-        SellerID: usedBook.seller,
+        SellerID: usedBook.sellerid,
         ListTimestamp: usedBook.listtimestamp,
         AskingPrice: usedBook.askingprice,
         BookID: usedBook.bookid,
@@ -44,7 +51,7 @@ export const getComments = async (req, res) => {
     if (!existenceResult.rowCount)
       return res.status(404).json({ error: "Used book not found" });
     const commentsQuery = {
-      text: `SELECT commenter, content, commenttimestamp 
+      text: `SELECT commenterid, content, commenttimestamp 
       FROM comments WHERE usedbookid = $1
       ORDER BY commenttimestamp DESC`,
       values: [usedBookId],
@@ -52,7 +59,7 @@ export const getComments = async (req, res) => {
     const commentsResult = await db.query(commentsQuery);
     const data = commentsResult.rows.map((comment) => {
       return {
-        CommenterID: comment.commenter,
+        CommenterID: comment.commenterid,
         Comment: comment.content,
         CommentTimestamp: comment.commenttimestamp,
       };
@@ -68,17 +75,14 @@ export const getComments = async (req, res) => {
 export const addUsedBook = async (req, res) => {
   const { AdditionalDetails, BookPicture, BookCondition, AskingPrice, BookID } =
     req.body;
-
   if (!(BookPicture && BookCondition && AskingPrice && BookID))
     return res.status(400).json({ error: "Please provide required details" });
-
-  // const sellerID = req.authorization_id;
-  const SellerID = "z99995183";
+  const SellerID = req.authorization_id;
 
   try {
     const query = {
       text: `INSERT INTO usedbook 
-      (additionaldetails, bookpicture, bookcondition, seller, askingprice, bookid) 
+      (additionaldetails, bookpicture, bookcondition, sellerid, askingprice, bookid) 
       VALUES ($1, $2, $3, $4, $5, $6) RETURNING usedbookid, listtimestamp`,
       values: [
         AdditionalDetails ?? "",
@@ -112,13 +116,12 @@ export const addComment = async (req, res) => {
   const { id: usedBookId } = req.params;
   const { Comment } = req.body;
   if (!Comment) return res.status(400).json({ error: "Missing comment" });
-  // const sellerID = req.authorization_id;
-  const SellerID = "z99995183";
+  const SellerID = req.authorization_id;
 
   try {
     const query = {
       text: `INSERT INTO comments 
-      (usedbookid, commenter, content) 
+      (usedbookid, commenterid, content) 
       VALUES ($1, $2, $3) RETURNING commenttimestamp`,
       values: [usedBookId, SellerID, Comment],
     };
@@ -141,6 +144,7 @@ export const updateUsedBook = async (req, res) => {
   const { id: usedBookId } = req.params;
   const { AdditionalDetails, BookPicture, BookCondition, AskingPrice, BookID } =
     req.body;
+  const SellerID = req.authorization_id;
 
   try {
     const existenceQuery = {
@@ -150,6 +154,8 @@ export const updateUsedBook = async (req, res) => {
     const existenceResult = await db.query(existenceQuery);
     if (!existenceResult.rowCount)
       return res.status(404).json({ error: "Used book not found" });
+    if (SellerID !== existenceResult.rows[0].sellerid && SellerID !== "admin")
+      return res.status(403).json({ error: "You do not own this used book" });
     const query = {
       text: `UPDATE usedbook SET additionaldetails = $1, bookpicture = $2, bookcondition = $3, 
       askingprice = $4, bookid = $5 WHERE usedbookid = $6`,
@@ -170,7 +176,7 @@ export const updateUsedBook = async (req, res) => {
           AdditionalDetails ?? existenceResult.rows[0].additionaldetails,
         BookPicture: BookPicture ?? existenceResult.rows[0].bookpicture,
         BookCondition: BookCondition ?? existenceResult.rows[0].bookcondition,
-        SellerID: existenceResult.rows[0].seller,
+        SellerID: existenceResult.rows[0].sellerid,
         ListTimestamp: existenceResult.rows[0].listtimestamp,
         AskingPrice: AskingPrice ?? existenceResult.rows[0].askingprice,
         BookID: BookID ?? existenceResult.rows[0].bookid,
@@ -194,6 +200,8 @@ export const deleteUsedBook = async (req, res) => {
     const existenceResult = await db.query(existenceQuery);
     if (!existenceResult.rowCount)
       return res.status(404).json({ error: "Used book not found" });
+    if (SellerID !== existenceResult.rows[0].sellerid && SellerID !== "admin")
+      return res.status(403).json({ error: "You do not own this used book" });
     const deleteQuery = {
       text: "DELETE FROM usedbook WHERE usedbookid = $1",
       values: [usedBookId],
