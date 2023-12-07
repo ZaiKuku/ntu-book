@@ -129,7 +129,11 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
 };
 
 export const addTextBookInfo = async (req, res) => {
-  // TODO: auth
+  // Auth
+  const user_id = req.authorization_id;
+  if (!user_id) { 
+    return res.status(401).json({ error: "Must be logged in." });
+  }
 
   const { BookID, SerialNumber, Semester } = req.body;
   if (!BookID || !SerialNumber || !Semester) {
@@ -172,7 +176,11 @@ export const addTextBookInfo = async (req, res) => {
 };
 
 export const addBook = async (req, res) => {
-  // TODO: auth of admin
+  // Auth of admin
+  const user_id = req.authorization_id;
+  if (user_id !== "admin") { 
+    return res.status(403).json({ error: "You are not authorized." });
+  }
 
   const { ISBN, Title, Author, Genre, PublisherName, SuggestedRetailPrice } =
     req.body;
@@ -211,7 +219,12 @@ export const addBook = async (req, res) => {
 };
 
 export const updateBookDetails = async (req, res) => {
-  // TODO: auth of admin
+  // Auth of admin
+  const user_id = req.authorization_id;
+  if (user_id !== "admin") { 
+    return res.status(403).json({ error: "You are not authorized." });
+  }
+
   const { id } = req.params; // ISBN of the book
   let { ISBN, Title, Genre, AuthorName, PublisherName, SuggestedRetailPrice } =
     req.body; // Updated values
@@ -272,7 +285,11 @@ export const updateBookDetails = async (req, res) => {
 };
 
 export const deleteBook = async (req, res) => {
-  // TODO: auth of admin
+  // Auth of admin
+  const user_id = req.authorization_id;
+  if (user_id !== "admin") { 
+    return res.status(403).json({ error: "You are not authorized." });
+  }
 
   const { id } = req.params; // ISBN of the book
   try {

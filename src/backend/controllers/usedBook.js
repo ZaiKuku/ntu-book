@@ -191,6 +191,7 @@ export const updateUsedBook = async (req, res) => {
 // Delete used book
 export const deleteUsedBook = async (req, res) => {
   const { id: usedBookId } = req.params;
+  const SellerID = req.authorization_id;
 
   try {
     const existenceQuery = {
