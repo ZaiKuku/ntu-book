@@ -7,7 +7,7 @@ import {
   SpeedDialAction,
 } from "@material-tailwind/react";
 
-import { HomeIcon } from "@heroicons/react/24/outline";
+// import { HomeIcon } from "@heroicons/react/24/outline";
 
 import { useState } from "react";
 import { useRouter } from "next/router";

@@ -42,18 +42,19 @@ export default function LoginDialog() {
     const body = {
       SchoolID: e.target.SchoolID.value,
       SchoolMail: e.target.SchoolMail.value,
+      UserName: e.target.SchoolID.value,
       Password: e.target.Password.value,
       FirstName: e.target.FirstName.value,
       LastName: e.target.LastName.value,
     };
     console.log(body);
     try {
-      const { data } = await useSignUp();
-      console.log(data);
-      setCookie(null, "token", data.token, {
-        maxAge: 30 * 24 * 60 * 60,
-        path: "/",
-      });
+      const data = await useSignUp(body);
+      // console.log(data);
+      // setCookie(null, "token", data.token, {
+      //   maxAge: 30 * 24 * 60 * 60,
+      //   path: "/",
+      // });
     } catch (error) {
       console.log(error);
     }

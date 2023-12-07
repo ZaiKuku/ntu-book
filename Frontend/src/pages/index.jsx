@@ -1,8 +1,8 @@
-import DrawerComponent from '../components/Drawer'
-import Navbar from '../components/Navbar'
-import LoginDialog from '../components/LoginDialog'
-import SideBar from '../components/SideBar'
-import BooksGroup from '../components/BooksGroup'
+import DrawerComponent from "../components/Drawer";
+import Navbar from "../components/Navbar";
+import LoginDialog from "../components/LoginDialog";
+import SideBar from "../components/SideBar";
+import BooksGroup from "../components/BooksGroup";
 
 export default function Home() {
   return (
@@ -11,10 +11,10 @@ export default function Home() {
         <Navbar />
         <LoginDialog />
         <div className="flex flex-row w-full gap-20">
-          <SideBar/>
-          <BooksGroup/>
+          <SideBar />
+          <BooksGroup />
         </div>
       </main>
     </div>
-  )
+  );
 }

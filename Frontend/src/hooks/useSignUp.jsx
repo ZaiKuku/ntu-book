@@ -3,9 +3,10 @@ import axios from "axios";
 import sweetAlert from "sweetalert";
 
 export default function useSignUp(body) {
-  const api = process.env.API_URL;
-  const apiUrl = `${api}/users/signup`;
-
+  // const api = process.env.API_URL;
+  const api = "http://127.0.0.1:8000";
+  const apiUrl = `${api}/users/register`;
+  console.log(body);
   const fetchData = async () => {
     try {
       const response = await axios.post(apiUrl, body, {
