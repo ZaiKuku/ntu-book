@@ -26,9 +26,6 @@ function getUser(column, value) {
 
 function createUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
 
-    //Captalize StudentID
-    StudentID = StudentID.toUpperCase();
-
     const query = {
         text: `INSERT INTO users (StudentID, SchoolEmail, Username, Fname, Lname, Password) VALUES ($1, $2, $3, $4, $5, $6)`,
         values: [StudentID, SchoolEmail, Username, Fname, Lname, Password],
@@ -36,7 +33,7 @@ function createUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
 
     return db.query(query)
         .then((result) => {
-            return result[0].StudentID;;
+            return StudentID;
         })
         .catch((err) => {
             console.log(err);
@@ -98,16 +95,16 @@ async function updateUser(StudentID, SchoolEmail, Username, Fname, Lname, Passwo
 async function getRating(StudentID) {
 
     const currRatingQuery = `WITH currRating AS (
-        SELECT r.*, ub.Seller, p.Buyer FROM rating AS r
+        SELECT r.*, ub.SellerID, p.BuyerID FROM rating AS r
         JOIN purchase AS p ON r.UsedBookID = p.UsedBookID 
         JOIN UsedBook AS ub ON p.UsedBookID = ub.UsedBookID
-        WHERE ub.Seller = $1
+        WHERE ub.SellerID = $1
     )`;
 
     const ratingQuery = {
         text: `
         ${currRatingQuery}
-        SELECT r.Buyer AS StudentID, r.StarsCount, r.Review FROM currRating AS r
+        SELECT r.BuyerID AS StudentID, r.StarsCount, r.Review FROM currRating AS r
         `,
         values: [StudentID],
     };

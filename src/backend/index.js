@@ -26,18 +26,19 @@ const port = process.env.PORT || 8000;
 // Connect to PostgreSQL
 const client = new Client({
   host: process.env.PGHOST,
-  user: process.env.DB_USER,
+  user: process.env.PGUSER,
   database: process.env.PGDATABASE,
   password: process.env.PGPASSWORD,
   port: process.env.PGPORT,
   connectionTimeoutMillis: 5000,
 });
 
-await client.connect()
+await client
+  .connect()
   .then(() => {
     // Successfully connected to PostgreSQL server
     app.listen(port, () =>
-      console.log(`Server running on port http://localhost:${port}`),
+      console.log(`Server running on port http://localhost:${port}`)
     );
     console.log("Connected to PostgreSQL server");
   })
