@@ -7,6 +7,7 @@ import {
   updateBookDetails,
 } from "../controllers/book.js";
 import express from "express";
+import { authorization } from "../utils/authorization.js";
 
 // Create an express router
 const router = express.Router();
@@ -21,16 +22,16 @@ router.get("", searchBooks);
 router.get("/:id", getBookInfoAndUsedBooks);
 
 // POST /api/book/textbook
-router.post("/textbook", addTextBookInfo);
+router.post("/textbook", authorization, addTextBookInfo);
 
 // POST /api/book
-router.post("", addBook);
+router.post("", authorization, addBook);
 
 // PUT /api/book/:id
-router.put("/:id", updateBookDetails);
+router.put("/:id", authorization, updateBookDetails);
 
 // DELETE /api/book/:id
-router.delete("/:id", deleteBook);
+router.delete("/:id", authorization, deleteBook);
 
 // export the router
 export default router;
