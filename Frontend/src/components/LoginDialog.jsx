@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setOpenLogin } from "../redux/openLogin";
 import { setCookie } from "cookies-next";
 import useLogIn from "../hooks/useLogIn";
+import useSignUp from "../hooks/useSignUp";
 
 export default function LoginDialog() {
   const dispatch = useDispatch();
@@ -35,10 +36,33 @@ export default function LoginDialog() {
     }
   };
 
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+
+    const body = {
+      SchoolID: e.target.SchoolID.value,
+      SchoolMail: e.target.SchoolMail.value,
+      Password: e.target.Password.value,
+      FirstName: e.target.FirstName.value,
+      LastName: e.target.LastName.value,
+    };
+    console.log(body);
+    try {
+      const { data } = await useSignUp();
+      console.log(data);
+      setCookie(null, "token", data.token, {
+        maxAge: 30 * 24 * 60 * 60,
+        path: "/",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+    handleOpen();
+  };
+
   const Current = () => {
     setLogin(!Login);
   };
-
   const LoginForm = (
     <Card className="mx-auto w-full max-w-[24rem]">
       <CardBody className="flex flex-col gap-4">
@@ -67,7 +91,7 @@ export default function LoginDialog() {
       </CardBody>
       <CardFooter className="pt-0">
         <Button variant="gradient" onClick={handleLogin} fullWidth>
-          Sign In
+          Sign IN
         </Button>
         <Typography variant="small" className="mt-4 flex justify-center">
           Don&apos;t have an account?
@@ -88,56 +112,66 @@ export default function LoginDialog() {
 
   const SignUpForm = (
     <Card className="mx-auto w-full max-w-[24rem]">
-      <CardBody className="flex flex-col gap-4">
-        <Typography
-          variant="h4"
-          color="white"
-          className="bg-[#918876] rounded-md p-2"
-        >
-          Sign Up
-        </Typography>
-        <Typography
-          className="mb-3 font-normal"
-          variant="paragraph"
-          color="gray"
-        >
-          Enter your SchoolID and password to Sign Up.
-        </Typography>
-        <Typography className="-mb-2" variant="h6">
-          Your SchoolID
-        </Typography>
-        <Input label="SchoolID" size="lg" />
-        <Typography className="-mb-2" variant="h6">
-          Your SchoolMail
-        </Typography>
-        <Input label="SchoolMail" size="lg" />
-        <Typography className="-mb-2" variant="h6">
-          Your Password
-        </Typography>
-        <Input label="Password" size="lg" />
-        <Typography className="-mb-2" variant="h6">
-          Enter Password Again
-        </Typography>
-        <Input label="Enter Password Again" size="lg" />
-      </CardBody>
-      <CardFooter className="pt-0">
-        <Button variant="gradient" onClick={handleOpen} fullWidth>
-          Sign In
-        </Button>
-        <Typography variant="small" className="mt-4 flex justify-center">
-          Already Signed Up?
+      <form onSubmit={handleSignUp}>
+        <CardBody className="flex flex-col gap-4">
           <Typography
-            as="a"
-            href="#signup"
-            variant="small"
-            color="blue-gray"
-            className="ml-1 font-bold"
-            onClick={Current}
+            variant="h4"
+            color="white"
+            className="bg-[#918876] rounded-md p-2"
           >
-            Sign in
+            Sign Up
           </Typography>
-        </Typography>
-      </CardFooter>
+          <Typography
+            className="mb-3 font-normal"
+            variant="paragraph"
+            color="gray"
+          >
+            Enter your SchoolID and password to Sign Up.
+          </Typography>
+          <Typography className="-mb-2" variant="h6">
+            Your SchoolID
+          </Typography>
+          <Input label="SchoolID" size="lg" name="SchoolID" />
+          <Typography className="-mb-2" variant="h6">
+            Your SchoolMail
+          </Typography>
+          <Input label="SchoolMail" size="lg" name="SchoolMail" />
+          <Typography className="-mb-2" variant="h6">
+            Your Password
+          </Typography>
+          <Input label="Password" size="lg" name="Password" />
+          <Typography className="-mb-2" variant="h6">
+            First Name
+          </Typography>
+          <Input label="FirstName" size="lg" name="FirstName" />
+          <Typography className="-mb-2" variant="h6">
+            Last Name
+          </Typography>
+          <Input label="LastName" size="lg" name="LastName" />
+          <Typography className="-mb-2" variant="h6">
+            Enter Password Again
+          </Typography>
+          <Input label="Enter Password Again" size="lg" />
+        </CardBody>
+        <CardFooter className="pt-0">
+          <Button variant="gradient" fullWidth type="submit">
+            Sign Up
+          </Button>
+          <Typography variant="small" className="mt-4 flex justify-center">
+            Already Signed Up?
+            <Typography
+              as="a"
+              href="#signup"
+              variant="small"
+              color="blue-gray"
+              className="ml-1 font-bold"
+              onClick={Current}
+            >
+              Sign in
+            </Typography>
+          </Typography>
+        </CardFooter>
+      </form>
     </Card>
   );
 

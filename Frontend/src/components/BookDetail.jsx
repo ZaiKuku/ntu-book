@@ -10,8 +10,11 @@ import {
   ListItemPrefix,
   Input,
 } from "@material-tailwind/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@material-tailwind/react";
+import useUsedBookDetail from "../hooks/useUsedBookDetail";
+import useGetBookInfoAndUsedBookIds from "../hooks/useGetBookInfoAndUsedBookIds";
+import { useRouter } from "next/router";
 
 const CommentData = [
   {
@@ -74,9 +77,19 @@ const BookInfoData = {
   Genre: "科技",
 };
 
+const UsedBooksData = [
+  {
+    UsedBookID: 1,
+  },
+  {
+    UsedBookID: 2,
+  },
+];
+
 export default function BookDetail() {
   const [selected, setSelected] = useState(SellersData[0].UsedBookID);
   const setSelectedItem = (value) => setSelected(value);
+  const router = useRouter();
 
   const [comment, setComment] = useState("");
 
@@ -96,7 +109,7 @@ export default function BookDetail() {
     </ListItem>
   ));
 
-  const sellers = SellersData.map((seller) => (
+  const sellers = SellersData?.map((seller) => (
     <ListItem
       selected={selected === seller.UsedBookID}
       onClick={() => setSelectedItem(seller.UsedBookID)}
@@ -126,6 +139,23 @@ export default function BookDetail() {
 
     setComment("");
   };
+
+  useEffect(() => {
+    const { id } = router.query;
+    const cookie = document.cookie;
+    try {
+      const BookInfoData = useGetBookInfoAndUsedBookIds(token, id);
+      const UsedBookData = BookInfoData.UsedBooks;
+    } catch (error) {
+      console.log(error);
+    }
+
+    var UsedBookDetail = [];
+    UsedBookDetail.forEach((UsedBook) => {
+      const UsedBookDetail = useUsedBookDetail(UsedBook.UsedBookID);
+      UsedBookDetail.push(UsedBookDetail);
+    });
+  }, []);
 
   return (
     <div className="flex flex-col gap-6 w-[80vw] justify-center items-center">
