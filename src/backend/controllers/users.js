@@ -39,6 +39,18 @@ export function signIn(req, res) {
         return res.status(400).json({ error: 'Missing value' });
     }
 
+    if (req.body.StudentID == 'admin') {
+        if (req.body.Password !== process.env.ADMIN_PASSWORD) {
+            return res.status(400).json({ error: 'Password does not match' });
+        }
+        const result = {
+            data: {
+                Token: generateJWT(req.body.StudentID)
+            }
+        }
+        return res.status(200).json(result);
+    }
+
     model.getUser('StudentID', req.body.StudentID).then((user) => {
         if (!user) {
             return res.status(404).json({ error: 'Email does not exist' });
