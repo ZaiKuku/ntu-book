@@ -1,8 +1,3 @@
-import { PencilIcon } from "@heroicons/react/24/solid";
-import {
-  ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
 import {
   Card,
   CardHeader,
@@ -18,10 +13,16 @@ import {
   rating,
 } from "@material-tailwind/react";
 import { useState } from "react";
-import Rating from '@mui/material/Rating';
- 
-const TABLE_HEAD = ["Listed Books", "Price", "Order Placed Date", "Rating",  "Comment"];
- 
+import Rating from "@mui/material/Rating";
+
+const TABLE_HEAD = [
+  "Listed Books",
+  "Price",
+  "Order Placed Date",
+  "Rating",
+  "Comment",
+];
+
 const TABLE_ROWS = [
   {
     img: "/b2.jpg",
@@ -29,7 +30,8 @@ const TABLE_ROWS = [
     amount: "$2,500",
     date: "Wed 3:00pm",
     rating: 5,
-    comment: "Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!",
+    comment:
+      "Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!",
   },
   {
     img: "/b2.jpg",
@@ -37,10 +39,11 @@ const TABLE_ROWS = [
     amount: "$2,500",
     date: "Wed 3:00pm",
     rating: 5,
-    comment: "Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!",
-  }
+    comment:
+      "Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!",
+  },
 ];
- 
+
 export default function PersonalBuyerComments() {
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
   return (
@@ -59,7 +62,22 @@ export default function PersonalBuyerComments() {
             <div className="w-full md:w-72">
               <Input
                 label="Search"
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    />
+                  </svg>
+                }
               />
             </div>
           </div>
@@ -87,22 +105,12 @@ export default function PersonalBuyerComments() {
           </thead>
           <tbody>
             {TABLE_ROWS.map(
-              (
-                {
-                  img,
-                  title,
-                  amount,
-                  date,
-                  rating,
-                  comment,
-                },
-                index,
-              ) => {
+              ({ img, title, amount, date, rating, comment }, index) => {
                 const isLast = index === TABLE_ROWS.length - 1;
                 const classes = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";
- 
+
                 return (
                   <tr key={title}>
                     <td className={classes}>
@@ -144,11 +152,13 @@ export default function PersonalBuyerComments() {
                       <Rating name="read-only" value={rating} readOnly />
                     </td>
                     <td className={classes}>
-                      <article className="flex flex-wrap w-80">{comment}</article>
+                      <article className="flex flex-wrap w-80">
+                        {comment}
+                      </article>
                     </td>
                   </tr>
                 );
-              },
+              }
             )}
           </tbody>
         </table>

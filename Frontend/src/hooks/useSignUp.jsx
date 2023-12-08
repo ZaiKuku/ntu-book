@@ -5,8 +5,8 @@ import sweetAlert from "sweetalert";
 export default function useSignUp(body) {
   // const api = process.env.API_URL;
   const api = "http://127.0.0.1:8000";
-  const apiUrl = `${api}/users/register`;
-  console.log(body);
+  const apiUrl = `${api}/api/users/register`;
+
   const fetchData = async () => {
     try {
       const response = await axios.post(apiUrl, body, {
@@ -17,6 +17,7 @@ export default function useSignUp(body) {
 
       if (response.status === 200) {
         console.log(response);
+        return response.data;
         // 處理獲得的資料
       } else {
         console.error("Error:", response.status);

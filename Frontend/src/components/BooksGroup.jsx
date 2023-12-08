@@ -1,7 +1,10 @@
 import BookCard from "./BookCard";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import useSearchBooks from "../hooks/useSearchBooks";
+import { useCookies } from "react-cookie";
 
-const bookcarditems = {
+const bookcarditemss = {
   data: [
     {
       ISBN: 100000,
@@ -58,10 +61,27 @@ const bookcarditems = {
 
 export default function BooksGroup() {
   const router = useRouter();
+  const [cookies] = useCookies(["token"]);
   const handleToProductPage = (ISBN) => {
     router.push("/product/" + ISBN);
   };
-  const bookcards = bookcarditems.data.map((bookcarditem) => {
+  const [bookcarditems, setBookcarditems] = useState({ data: [] });
+
+  useEffect(() => {
+    try {
+      const { data } = useSearchBooks(
+        "達人必學 Python 3.x 程式設計 - 最新版(第二版) - 附 MOSME 行動學習一點通：評量．詳解．加值",
+        cookies.token
+      );
+      setBookcarditems(data);
+    } catch (error) {
+      setBookcarditems(bookcarditemss);
+      console.error(error);
+    }
+  }, []);
+  console.log(bookcarditems);
+
+  const bookcards = bookcarditemss.data.map((bookcarditem) => {
     return (
       <div
         className="hover:scale-105 transform transition duration-300 ease-in-out hover:cursor-pointer"

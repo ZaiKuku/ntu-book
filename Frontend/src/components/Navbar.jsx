@@ -15,11 +15,14 @@ import { useDispatch } from "react-redux";
 import { setOpenLogin } from "../redux/openLogin";
 import { useRouter } from "next/router";
 import UserButton from "./UserButton";
+import { useCookies } from "react-cookie";
 
 export default function NavbarNTU() {
   const [openNav, setOpenNav] = useState(false);
   const dispatch = useDispatch();
   const handleOpen = () => dispatch(setOpenLogin(true));
+  const [LoggedIn, setLoggedIn] = useState(false);
+  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
 
   const [open, setOpen] = useState(0);
   const handleOpenList = (value) => {
@@ -37,6 +40,9 @@ export default function NavbarNTU() {
       "resize",
       () => window.innerWidth >= 960 && setOpenNav(false)
     );
+    if (cookies.token) {
+      setLoggedIn(true);
+    }
   }, []);
 
   const DepartmentItems = (
@@ -98,17 +104,21 @@ export default function NavbarNTU() {
               Search
             </Button>
           </div>
-          <div className="flex items-center gap-x-1">
-            <Button
-              variant="gradient"
-              size="sm"
-              className="hidden lg:inline-block"
-              onClick={handleOpen}
-            >
-              <span>Log In</span>
-            </Button>
-            {/* <UserButton /> */}
-          </div>
+
+          {!LoggedIn ? (
+            <div className="flex items-center gap-x-1">
+              <Button
+                variant="gradient"
+                size="sm"
+                className="hidden lg:inline-block"
+                onClick={handleOpen}
+              >
+                <span>Log In</span>
+              </Button>
+            </div>
+          ) : (
+            <UserButton />
+          )}
         </div>
       </div>
     </Navbar>

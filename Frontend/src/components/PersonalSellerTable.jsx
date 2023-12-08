@@ -1,8 +1,3 @@
-import { PencilIcon } from "@heroicons/react/24/solid";
-import {
-  ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
 import {
   Card,
   CardHeader,
@@ -17,9 +12,9 @@ import {
   Input,
 } from "@material-tailwind/react";
 import { useState } from "react";
- 
+
 const TABLE_HEAD = ["Listed Books", "Price", "Listed Date", "Orders Placed"];
- 
+
 const TABLE_ROWS = [
   {
     img: "/b2.jpg",
@@ -51,14 +46,13 @@ const TABLE_ROWS = [
   },
 ];
 
-import { useRouter } from 'next/router'
+import { useRouter } from "next/router";
 
- 
 export default function PersonalSellerTable() {
-    const router = useRouter()
-    const handleAddNewBook = () => {
-        router.push('/AddBookPage')
-    }
+  const router = useRouter();
+  const handleAddNewBook = () => {
+    router.push("/AddBookPage");
+  };
 
   return (
     <Card className="max-h-[70vh] m-8 w-[80vw]">
@@ -72,17 +66,9 @@ export default function PersonalSellerTable() {
               These are details about the listed books.
             </Typography>
           </div>
-          
+
           <div className="flex w-full shrink-0 gap-2 md:w-max">
-            <Button onClick={handleAddNewBook}>
-                Add New Book
-            </Button>
-            <div className="w-full md:w-72">
-              <Input
-                label="Search"
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
-            </div>
+            <Button onClick={handleAddNewBook}>Add New Book</Button>
           </div>
         </div>
       </CardHeader>
@@ -108,24 +94,17 @@ export default function PersonalSellerTable() {
           </thead>
           <tbody>
             {TABLE_ROWS.map(
-              (
-                {
-                  img,
-                  title,
-                  amount,
-                  date,
-                  ordersPlaced,
-
-                },
-                index,
-              ) => {
+              ({ img, title, amount, date, ordersPlaced }, index) => {
                 const isLast = index === TABLE_ROWS.length - 1;
                 const classes = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";
- 
+
                 return (
-                  <tr key={title} className="cursor-pointer hover:bg-blue-gray-50">
+                  <tr
+                    key={title}
+                    className="cursor-pointer hover:bg-blue-gray-50"
+                  >
                     <td className={classes}>
                       <div className="flex items-center gap-3">
                         <Avatar
@@ -162,13 +141,11 @@ export default function PersonalSellerTable() {
                       </Typography>
                     </td>
                     <td className={classes}>
-                      <div className="w-max">
-                        {ordersPlaced}
-                      </div>
+                      <div className="w-max">{ordersPlaced}</div>
                     </td>
                   </tr>
                 );
-              },
+              }
             )}
           </tbody>
         </table>

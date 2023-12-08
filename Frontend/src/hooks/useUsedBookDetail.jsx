@@ -1,12 +1,16 @@
 import axios from "axios";
 
-export default function useUsedBookDetail(body) {
+export default function useUsedBookDetail(body, ISBN = 9789865238803) {
   const api = process.env.API_URL;
-  const apiUrl = `${api}/users/signin`;
+  const apiUrl = `${api}/book/${ISBN}`;
 
   const fetchData = async () => {
     try {
-      const response = await axios.post(apiUrl, body);
+      const response = await axios.post(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.status === 200) {
         // console.log(response.data);
