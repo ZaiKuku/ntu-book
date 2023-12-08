@@ -15,6 +15,7 @@ import { Button } from "@material-tailwind/react";
 import useUsedBookDetail from "../hooks/useUsedBookDetail";
 import useGetBookInfoAndUsedBookIds from "../hooks/useGetBookInfoAndUsedBookIds";
 import { useRouter } from "next/router";
+import { useCookies } from "react-cookie";
 
 const CommentData = [
   {
@@ -92,6 +93,7 @@ export default function BookDetail() {
   const router = useRouter();
 
   const [comment, setComment] = useState("");
+  const [cookies, setCookie] = useCookies(["token"]);
 
   const comments = CommentData.map((comment) => (
     <ListItem key={comment.CommenterID + comment.CommentTimestamp}>
@@ -142,7 +144,7 @@ export default function BookDetail() {
 
   useEffect(() => {
     const { id } = router.query;
-    const cookie = document.cookie;
+
     try {
       const BookInfoData = useGetBookInfoAndUsedBookIds(token, id);
       const UsedBookData = BookInfoData.UsedBooks;
