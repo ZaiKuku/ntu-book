@@ -30,70 +30,16 @@ const CommentData = [
   },
 ];
 
-const SellersData = [
-  {
-    UsedBookID: 10,
-    AdditionalDetails: "", // empty string = no additional details
-    BookPicture: "",
-    BookCondition: 8,
-    SellerID: "b12345678",
-    ListTimestamp: "1970-01-04 00:00:01.000000",
-    AskingPrice: 500,
-  },
-  {
-    UsedBookID: 11,
-    AdditionalDetails: "", // empty string = no additional details
-    BookPicture: "url-of-image",
-    BookCondition: 8,
-    SellerID: "b12345678",
-    ListTimestamp: "1970-01-01 00:00:01.000000",
-    AskingPrice: 500,
-  },
-  {
-    UsedBookID: 12,
-    AdditionalDetails: "", // empty string = no additional details
-    BookPicture: "url-of-image",
-    BookCondition: 8,
-    SellerID: "b12345678",
-    ListTimestamp: "1970-01-01 00:00:01.000000",
-    AskingPrice: 500,
-  },
-  {
-    UsedBookID: 13,
-    AdditionalDetails: "", // empty string = no additional details
-    BookPicture: "",
-    BookCondition: 8,
-    SellerID: "b12345678",
-    ListTimestamp: "1970-01-01 00:00:01.000000",
-    AskingPrice: 500,
-  },
-];
-
-const BookInfoData = {
-  ISBN: 100000,
-  Title: "Latex 排版全書",
-  Edition: "5",
-  PublisherName: "小傑出版社",
-  AuthorName: "LC Kung",
-  Genre: "科技",
-};
-
-const UsedBooksData = [
-  {
-    UsedBookID: 1,
-  },
-  {
-    UsedBookID: 2,
-  },
-];
-
 export default function BookDetail() {
-  const [selected, setSelected] = useState(SellersData[0].UsedBookID);
   const setSelectedItem = (value) => setSelected(value);
   const router = useRouter();
-
+  const { id } = router.query;
   const [comment, setComment] = useState("");
+  const [usedBookData, setUsedBookData] = useState([]);
   const [cookies, setCookie] = useCookies(["token"]);
+  const [sellerData, setSellerData] = useState([]);
+  const [selected, setSelected] = useState(sellerData?.UsedBookID);
+  const [usedbookdetail, setUsedBookDetail] = useState([]);
 
   const comments = CommentData.map((comment) => (
     <ListItem key={comment.CommenterID + comment.CommentTimestamp}>
@@ -111,10 +57,11 @@ export default function BookDetail() {
     </ListItem>
   ));
 
-  const sellers = SellersData?.map((seller) => (
+  const sellers = sellerData?.map((seller) => (
     <ListItem
       selected={selected === seller.UsedBookID}
       onClick={() => setSelectedItem(seller.UsedBookID)}
+      className="h-20"
     >
       <ListItemPrefix>
         <Avatar variant="circular" alt="candice" src="/user.png" />
@@ -130,7 +77,7 @@ export default function BookDetail() {
     </ListItem>
   ));
 
-  const information = SellersData.filter(
+  const information = sellerData?.filter(
     (seller) => seller.UsedBookID === selected
   )[0];
 
@@ -143,21 +90,39 @@ export default function BookDetail() {
   };
 
   useEffect(() => {
-    const { id } = router.query;
-
     try {
-      const BookInfoData = useGetBookInfoAndUsedBookIds(token, id);
-      const UsedBookData = BookInfoData.UsedBooks;
+      getBookInfo();
     } catch (error) {
-      console.log(error);
+      console.error("Error:", error);
     }
 
+    try {
+      getUsedBookDetail();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }, [id]);
+
+  const getBookInfo = async () => {
+    const { id } = router.query;
+    const BookInfoData = await useGetBookInfoAndUsedBookIds(cookies.token, id);
+
+    setUsedBookData(BookInfoData.data);
+    setSellerData(BookInfoData.data.UsedBooks);
+    setSelected(BookInfoData.data.UsedBooks[0].UsedBookID);
+  };
+
+  const getUsedBookDetail = async () => {
     var UsedBookDetail = [];
-    UsedBookDetail.forEach((UsedBook) => {
-      const UsedBookDetail = useUsedBookDetail(UsedBook.UsedBookID);
+    UsedBookDetail.forEach(async (UsedBook) => {
+      const UsedBookDetail = await useUsedBookDetail(UsedBook.UsedBookID);
       UsedBookDetail.push(UsedBookDetail);
     });
-  }, []);
+    setUsedBookDetail(UsedBookDetail);
+  };
+  const chips = usedBookData?.Genres?.map((Genre) => (
+    <Chip variant="ghost" value={Genre} size="sm" />
+  ));
 
   return (
     <div className="flex flex-col gap-6 w-[80vw] justify-center items-center">
@@ -176,13 +141,11 @@ export default function BookDetail() {
           </CardHeader>
           <CardBody className="w-full">
             <Typography variant="h4" color="blue-gray" className="mb-2">
-              {BookInfoData?.Title}
+              {usedBookData?.Title}
             </Typography>
-            <Typography color="blue-gray" className="mb-2 font-medium">
-              {BookInfoData?.AuthorName}, {BookInfoData?.Edition}th Edition
-            </Typography>
+
             <Typography color="blue-gray" className="mb-8 font-medium">
-              {BookInfoData?.PublisherName}
+              {usedBookData?.Publisher}
             </Typography>
             <Typography
               variant="h5"
@@ -196,15 +159,10 @@ export default function BookDetail() {
               {information?.BookCondition} 成新
             </Typography>
 
-            <div className="flex flex-row gap-1 w-full">
-              <Chip variant="ghost" value={BookInfoData?.Genre} size="sm" />
-            </div>
+            <div className="flex flex-row gap-1 w-full">{chips}</div>
             <div className="py-12">
               <Button>Buy Now</Button>
             </div>
-            <Typography color="blue-gray" className="mb-4 text-xs">
-              Listed At {information?.ListTimestamp.substring(0, 10)}
-            </Typography>
           </CardBody>
         </Card>
 

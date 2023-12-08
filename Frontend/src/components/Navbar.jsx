@@ -61,7 +61,7 @@ export default function NavbarNTU() {
       </ListItem>
     </List>
   );
-  console.log(LoggedIn);
+
   return (
     <Navbar className="sticky top-0 z-10 bg-[#918876] h-max max-w-full rounded-none px-4 py-2 lg:px-8 lg:py-4">
       <div
