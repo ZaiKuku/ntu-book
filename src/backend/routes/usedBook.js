@@ -44,7 +44,7 @@ router.delete("/:id", authorization, toLowerCase, deleteUsedBook);
 // GET /api/usedbook/:id/requests - Get all requests for used book
 router.get("/:id/requests", authorization, toLowerCase, getRequests);
 
-// GET /api/usedbook/:id/request - Get the request that a user has made for a used book (if anu)
+// GET /api/usedbook/:id/request - Get the request that a single user has made for a used book (if any)
 router.get("/:id/request", authorization, toLowerCase, getRequest);
 
 // POST /api/usedbook/:id/request - Add purchase request

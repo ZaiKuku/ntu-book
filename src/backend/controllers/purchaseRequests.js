@@ -32,7 +32,7 @@ export const getRequests = async (req, res) => {
   }
 };
 
-// Get the request that a user has made for a used book (if anu)
+// Get the request that a single user has made for a used book (if any)
 export const getRequest = async (req, res) => {
   const { id: usedBookId } = req.params;
   const BuyerID = req.authorization_id;
