@@ -13,7 +13,10 @@ export const getUsedBook = async (req, res) => {
 
   try {
     const query = {
-      text: "SELECT * FROM usedbook WHERE usedbookid = $1",
+      text: `
+      SELECT * FROM usedbook as ub 
+      LEFT JOIN purchase as p ON p.usedbookid = ub.usedbookid 
+      WHERE ub.usedbookid = $1`,
       values: [usedBookId],
     };
     const result = await db.query(query);
@@ -30,6 +33,7 @@ export const getUsedBook = async (req, res) => {
         ListTimestamp: usedBook.listtimestamp,
         AskingPrice: usedBook.askingprice,
         BookID: usedBook.bookid,
+        Sold: usedBook.buyerid ? true : false,
       },
     });
   } catch (error) {
@@ -103,6 +107,7 @@ export const addUsedBook = async (req, res) => {
         SellerID: SellerID,
         ListTimestamp: result.rows[0].listtimestamp,
         AskingPrice: AskingPrice,
+        Sold: false,
       },
     });
   } catch (error) {
