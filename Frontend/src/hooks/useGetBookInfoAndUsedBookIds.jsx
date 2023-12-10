@@ -1,11 +1,8 @@
 import axios from "axios";
 
-export default function useGetBookInfoAndUsedBookIds(
-  token,
-  id = 9789865238803
-) {
+export default function useGetBookInfoAndUsedBookIds(token, id) {
   const api = process.env.API_URL;
-  const apiUrl = `${api}/api/book/${9789865238803}`;
+  const apiUrl = `${api}/api/book/${id}`;
 
   const fetchData = async () => {
     try {

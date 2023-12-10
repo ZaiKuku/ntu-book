@@ -1,31 +1,20 @@
 import axios from "axios";
 
-export default function useSearchBooks(query, token) {
-  const api = process.env.API_URL + "/api/book?";
-
-  const apiUrl =
-    api +
-    (query.BookName
-      ? "BookName=" + query.BookName
-      : "" + query.AuthorName
-      ? "AuthorName=" + query.AuthorName
-      : "" + query.CourseName
-      ? "CourseName=" + query.CourseName
-      : "" + query.ISBN
-      ? "ISBN=" + query.ISBN
-      : "");
+export default function usePostPurchaseReqest(token, usedBookID) {
+  const api = process.env.API_URL;
+  const apiUrl = `${api}/api/usedbook/${usedBookID}/request`;
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(apiUrl, {
+      const response = await axios.post(apiUrl, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (response.status === 200) {
         // 處理獲得的資料
+        console.log(response.data);
         return response.data;
       }
       console.error("Error:", response.status);

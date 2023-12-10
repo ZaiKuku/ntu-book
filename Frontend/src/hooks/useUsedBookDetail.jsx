@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export default function useUsedBookDetail(ISBN = 9789865238803) {
+export default function useUsedBookDetail(ISBN) {
   const api = process.env.API_URL;
   const apiUrl = `${api}/api/usedbook/${ISBN}`;
 
@@ -13,8 +13,6 @@ export default function useUsedBookDetail(ISBN = 9789865238803) {
       });
 
       if (response.status === 200) {
-        console.log(response.data);
-
         // 處理獲得的資料
         return response.data;
       }

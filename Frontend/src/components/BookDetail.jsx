@@ -9,6 +9,7 @@ import {
   ListItem,
   ListItemPrefix,
   Input,
+  select,
 } from "@material-tailwind/react";
 import { useState, useEffect } from "react";
 import { Button } from "@material-tailwind/react";
@@ -16,6 +17,8 @@ import useUsedBookDetail from "../hooks/useUsedBookDetail";
 import useGetBookInfoAndUsedBookIds from "../hooks/useGetBookInfoAndUsedBookIds";
 import { useRouter } from "next/router";
 import { useCookies } from "react-cookie";
+import usePostPurchaseReqest from "../hooks/usePostPurchaseReqest";
+import sweetAlert from "sweetalert";
 
 const CommentData = [
   {
@@ -57,10 +60,10 @@ export default function BookDetail() {
     </ListItem>
   ));
 
-  const sellers = sellerData?.map((seller) => (
+  const sellers = usedbookdetail?.map((seller) => (
     <ListItem
-      selected={selected === seller.UsedBookID}
-      onClick={() => setSelectedItem(seller.UsedBookID)}
+      selected={selected === seller.data.UsedBookID}
+      onClick={() => setSelectedItem(seller.data.UsedBookID)}
       className="h-20"
     >
       <ListItemPrefix>
@@ -68,10 +71,10 @@ export default function BookDetail() {
       </ListItemPrefix>
       <div>
         <Typography variant="h6" color="blue-gray">
-          {seller.SellerID}
+          {seller.data.SellerID}
         </Typography>
         <Typography variant="small" color="gray" className="font-normal">
-          NT$ {seller.AskingPrice}
+          NT$ {seller.data.AskingPrice}
         </Typography>
       </div>
     </ListItem>
@@ -95,34 +98,64 @@ export default function BookDetail() {
     } catch (error) {
       console.error("Error:", error);
     }
-
-    try {
-      getUsedBookDetail();
-    } catch (error) {
-      console.error("Error:", error);
-    }
   }, [id]);
+
+  useEffect(() => {
+    if (sellerData.length > 0) {
+      getUsedBookDetail();
+    }
+  }, [id, sellerData]);
 
   const getBookInfo = async () => {
     const { id } = router.query;
-    const BookInfoData = await useGetBookInfoAndUsedBookIds(cookies.token, id);
-
-    setUsedBookData(BookInfoData.data);
-    setSellerData(BookInfoData.data.UsedBooks);
-    setSelected(BookInfoData.data.UsedBooks[0].UsedBookID);
+    try {
+      const BookInfoData = await useGetBookInfoAndUsedBookIds(
+        cookies.token,
+        id
+      );
+      setUsedBookData(BookInfoData.data);
+      setSellerData(BookInfoData.data.UsedBooks);
+      setSelected(BookInfoData.data.UsedBooks[0].UsedBookID);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const getUsedBookDetail = async () => {
-    var UsedBookDetail = [];
-    UsedBookDetail.forEach(async (UsedBook) => {
-      const UsedBookDetail = await useUsedBookDetail(UsedBook.UsedBookID);
-      UsedBookDetail.push(UsedBookDetail);
-    });
-    setUsedBookDetail(UsedBookDetail);
+    var UsedBookDetails = [];
+    for (var i = 0; i < sellerData.length; i++) {
+      try {
+        const UsedBookDetailData = await useUsedBookDetail(
+          sellerData[i].UsedBookID
+        );
+        UsedBookDetails.push(UsedBookDetailData);
+      } catch (error) {
+        console.log(error.error);
+      }
+    }
+    setUsedBookDetail(UsedBookDetails);
   };
+
   const chips = usedBookData?.Genres?.map((Genre) => (
     <Chip variant="ghost" value={Genre} size="sm" />
   ));
+
+  const handleBuyNow = async () => {
+    try {
+      const response = await usePostPurchaseReqest(
+        cookies.token,
+        information.UsedBookID
+      );
+      console.log(response);
+      sweetAlert(
+        "Success",
+        "Your purchase request has been sent to the seller",
+        "success"
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 w-[80vw] justify-center items-center">
@@ -143,6 +176,9 @@ export default function BookDetail() {
             <Typography variant="h4" color="blue-gray" className="mb-2">
               {usedBookData?.Title}
             </Typography>
+            <Typography color="blue-gray" className="mb-2 font-medium">
+              {usedBookData?.Author}
+            </Typography>
 
             <Typography color="blue-gray" className="mb-8 font-medium">
               {usedBookData?.Publisher}
@@ -161,7 +197,7 @@ export default function BookDetail() {
 
             <div className="flex flex-row gap-1 w-full">{chips}</div>
             <div className="py-12">
-              <Button>Buy Now</Button>
+              <Button onClick={handleBuyNow}>Buy Now</Button>
             </div>
           </CardBody>
         </Card>
