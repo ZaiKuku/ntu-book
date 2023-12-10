@@ -14,38 +14,65 @@ export const searchBooks = async (req, res) => {
 
   // I am not sure the below SQL is correct or not
   try {
-    const booksQuery = await db.query(`
-      SELECT b.ISBN, b.Title, b.PublisherName, b.AuthorName, MIN(ub.AskingPrice) AS LowestPrice, MAX(ub.AskingPrice) AS HighestPrice 
-      FROM BOOK AS b
-        JOIN USEDBOOK AS ub ON ub.bookID = b.ISBN
-        LEFT JOIN TEXTBOOK AS tb ON tb.bookID = b.ISBN
-        LEFT JOIN COURSEDEPT AS cd ON cd.serialNumber = tb.serialNumber AND cd.semester = tb.semester
-        LEFT JOIN COURSE AS c ON c.serialNumber = tb.serialNumber AND c.semester = tb.semester
-      WHERE LOWER(b.Title) LIKE LOWER('%${bookName || ""}%')
-      AND LOWER(b.AuthorName) LIKE LOWER('%${authorName || ""}%')
-      ${deptCode ? `AND cd.departmentCode = '${deptCode}'` : ``}
-      ${
-        courseName
-          ? `AND LOWER(c.courseName) LIKE LOWER('%${courseName}%')`
-          : ``
-      }
-      AND b.ISBN LIKE '%${isbn || ""}%'
-      GROUP BY b.ISBN
-    `);
+    const bookQueryValues = [
+      bookName ? "%" + bookName + "%" : "%",
+      authorName ? "%" + authorName + "%" : "%",
+    ];
+    let index = 3;
+    const indices = [];
+    if (deptCode) {
+      bookQueryValues.push(deptCode);
+      indices["deptCode"] = index++;
+    }
+    if (courseName) {
+      bookQueryValues.push("%" + courseName + "%");
+      indices["courseName"] = index++;
+    }
+    bookQueryValues.push(isbn ? "%" + isbn + "%" : "%");
+    indices["isbn"] = index++;
+
+    const booksQuery = await db.query({
+      text: `
+        SELECT b.ISBN, b.Title, b.PublisherName, b.AuthorName, MIN(ub.AskingPrice) AS LowestPrice, MAX(ub.AskingPrice) AS HighestPrice 
+        FROM BOOK AS b
+          JOIN USEDBOOK AS ub ON ub.bookID = b.ISBN
+          LEFT JOIN TEXTBOOK AS tb ON tb.bookID = b.ISBN
+          LEFT JOIN COURSEDEPT AS cd ON cd.serialNumber = tb.serialNumber AND cd.semester = tb.semester
+          LEFT JOIN COURSE AS c ON c.serialNumber = tb.serialNumber AND c.semester = tb.semester
+        WHERE b.Title ILIKE $1
+        AND b.AuthorName ILIKE $2
+        ${deptCode ? `AND cd.departmentCode = $${indices["deptCode"]}` : ``}
+        ${
+          courseName
+            ? `AND LOWER(c.courseName) LIKE LOWER($${indices["courseName"]})`
+            : ``
+        }
+        AND b.ISBN LIKE $${indices["isbn"]}
+        GROUP BY b.ISBN
+      `,
+      values: bookQueryValues,
+    });
+
     const books = await Promise.all(
       booksQuery.rows.map(async (book) => {
-        const genreQuery = await db.query(`
-        SELECT g.genre
-        FROM GENRE AS g
-        WHERE g.bookID = '${book.isbn}'
-      `);
+        const genreQuery = await db.query({
+          text: `
+            SELECT g.genre
+            FROM GENRE AS g
+            WHERE g.bookID = $1
+          `,
+          values: [book.isbn],
+        });
         const genre = genreQuery.rows.map((row) => row.genre);
-        const deptQuery = await db.query(`
-        SELECT cd.departmentCode
-        FROM COURSEDEPT AS cd
-          JOIN TEXTBOOK AS tb ON tb.serialNumber = cd.serialNumber AND tb.semester = cd.semester
-        WHERE tb.bookID = '${book.isbn}'
-      `);
+        const deptQuery = await db.query({
+          text: `
+            SELECT cd.departmentCode
+            FROM COURSEDEPT AS cd
+              JOIN TEXTBOOK AS tb ON tb.serialNumber = cd.serialNumber AND tb.semester = cd.semester
+            WHERE tb.bookID = $1
+          `,
+          values: [book.isbn],
+        });
         const dept = deptQuery.rows.map((row) => row.departmentcode);
         return {
           ISBN: book.isbn,
@@ -57,7 +84,7 @@ export const searchBooks = async (req, res) => {
           LowestPrice: book.lowestprice,
           HighestPrice: book.highestprice,
         };
-      }),
+      })
     );
     return res.status(200).json({ data: books });
   } catch (error) {
@@ -74,39 +101,51 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
   }
 
   try {
-    const bookInfoQuery = await db.query(`
-      SELECT b.Title, b.PublisherName
-      FROM BOOK AS b
-      WHERE b.ISBN = '${id}'
-    `);
+    const bookInfoQuery = await db.query({
+      text: `
+        SELECT b.Title, b.PublisherName
+        FROM BOOK AS b
+        WHERE b.ISBN = $1
+      `,
+      values: [id],
+    });
     if (bookInfoQuery.rows.length === 0) {
       return res.status(404).json({ error: "Book not found." });
     }
     const bookInfo = bookInfoQuery.rows[0];
 
-    const genreQuery = await db.query(`
-      SELECT g.genre
-      FROM GENRE AS g
-      WHERE g.bookID = '${id}'
-    `);
+    const genreQuery = await db.query({
+      text: `
+        SELECT g.genre
+        FROM GENRE AS g
+        WHERE g.bookID = $1
+      `,
+      values: [id],
+    });
     const genre = genreQuery.rows.map((row) => row.genre);
 
-    const departmentsQuery = await db.query(`
-      SELECT dept.departmentCode
-      FROM COURSEDEPT AS dept
-        JOIN TEXTBOOK AS tb ON tb.serialNumber = dept.serialNumber AND tb.semester = dept.semester
-      WHERE tb.bookID = '${id}'
-    `);
+    const departmentsQuery = await db.query({
+      text: `
+        SELECT dept.departmentCode
+        FROM COURSEDEPT AS dept
+          JOIN TEXTBOOK AS tb ON tb.serialNumber = dept.serialNumber AND tb.semester = dept.semester
+        WHERE tb.bookID = $1
+      `,
+      values: [id],
+    });
     const departments = departmentsQuery.rows.map((row) => row.departmentcode);
 
-    const usedBooksQuery = await db.query(`
-      SELECT ub.usedBookID AS UsedBookID, 
-        ub.bookPicture AS BookPicture, 
-        ub.askingPrice AS AskingPrice, 
-        ub.bookCondition AS BookCondition
-      FROM USEDBOOK AS ub
-      WHERE ub.bookid = '${id}'
-    `);
+    const usedBooksQuery = await db.query({
+      text: `
+        SELECT ub.usedBookID AS UsedBookID, 
+          ub.bookPicture AS BookPicture, 
+          ub.askingPrice AS AskingPrice, 
+          ub.bookCondition AS BookCondition
+        FROM USEDBOOK AS ub
+        WHERE ub.bookid = $1
+      `,
+      values: [id],
+    });
     const usedBooks = usedBooksQuery.rows.map((book) => ({
       UsedBookID: book.usedbookid,
       BookPicture: book.bookpicture,
@@ -131,7 +170,7 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
 export const addTextBookInfo = async (req, res) => {
   // Auth
   const user_id = req.authorization_id;
-  if (!user_id) { 
+  if (!user_id) {
     return res.status(401).json({ error: "Must be logged in." });
   }
 
@@ -141,30 +180,37 @@ export const addTextBookInfo = async (req, res) => {
   }
 
   try {
-    const checkBook = await db.query(`
-      SELECT * FROM BOOK WHERE ISBN = '${BookID}'
-    `);
+    const checkBook = await db.query({
+      text: `
+        SELECT * FROM BOOK WHERE ISBN = $1
+      `,
+      values: [BookID],
+    });
     if (checkBook.rows.length === 0) {
       return res
         .status(404)
         .json({ error: "Book with that ISBN does not exist." });
     }
 
-    const checkCourse = await db.query(`
-      SELECT * FROM COURSE WHERE SerialNumber = '${SerialNumber}' AND Semester = '${Semester}'
-    `);
+    const checkCourse = await db.query({
+      text: `
+        SELECT * FROM COURSE WHERE SerialNumber = $1 AND Semester = $2
+      `,
+      values: [SerialNumber, Semester],
+    });
     if (checkCourse.rows.length === 0) {
-      return res
-        .status(404)
-        .json({
-          error: "Course with that SerialNumber and Semester does not exist.",
-        });
+      return res.status(404).json({
+        error: "Course with that SerialNumber and Semester does not exist.",
+      });
     }
 
-    await db.query(`
-      INSERT INTO TEXTBOOK (BookID, SerialNumber, Semester)
-      VALUES ('${BookID}', '${SerialNumber}', '${Semester}')
-    `);
+    await db.query({
+      text: `
+        INSERT INTO TEXTBOOK (BookID, SerialNumber, Semester)
+        VALUES ($1, $2, $3)
+      `,
+      values: [BookID, SerialNumber, Semester],
+    });
     return res.status(200).json({
       data: {
         BookID: BookID,
@@ -178,7 +224,7 @@ export const addTextBookInfo = async (req, res) => {
 export const addBook = async (req, res) => {
   // Auth of admin
   const user_id = req.authorization_id;
-  if (user_id !== "admin") { 
+  if (user_id !== "admin") {
     return res.status(403).json({ error: "You are not authorized." });
   }
 
@@ -196,16 +242,22 @@ export const addBook = async (req, res) => {
   }
 
   try {
-    await db.query(`
-      INSERT INTO BOOK (ISBN, Title, PublisherName, SuggestedRetailPrice, AuthorName)
-      VALUES ('${ISBN}', '${Title}', '${PublisherName}', '${SuggestedRetailPrice}', '${Author}')
-    `);
+    await db.query({
+      text: `
+        INSERT INTO BOOK (ISBN, Title, PublisherName, SuggestedRetailPrice, AuthorName)
+        VALUES ($1, $2, $3, $4, $5)
+      `,
+      values: [ISBN, Title, PublisherName, SuggestedRetailPrice, Author],
+    });
 
     for (let g of Genre) {
-      await db.query(`
-        INSERT INTO GENRE (bookID, genre)
-        VALUES ('${ISBN}', '${g}')
-      `);
+      await db.query({
+        text: `
+          INSERT INTO GENRE (bookID, genre)
+          VALUES ($1, $2)
+        `,
+        values: [ISBN, g],
+      });
     }
 
     return res.status(200).json({
@@ -221,7 +273,7 @@ export const addBook = async (req, res) => {
 export const updateBookDetails = async (req, res) => {
   // Auth of admin
   const user_id = req.authorization_id;
-  if (user_id !== "admin") { 
+  if (user_id !== "admin") {
     return res.status(403).json({ error: "You are not authorized." });
   }
 
@@ -241,20 +293,26 @@ export const updateBookDetails = async (req, res) => {
 
   if (ISBN || Title || AuthorName || PublisherName || SuggestedRetailPrice) {
     try {
-      await db.query(`
-        UPDATE BOOK
-        SET 
-          ${ISBN ? `ISBN = '${ISBN}',` : ``}
-          ${Title ? `Title = '${Title}',` : ``}
-          ${AuthorName ? `AuthorName = '${AuthorName}',` : ``}
-          ${PublisherName ? `PublisherName = '${PublisherName}',` : ``}
-          ${
-            SuggestedRetailPrice
-              ? `SuggestedRetailPrice = '${SuggestedRetailPrice}'`
-              : ``
-          }
-        WHERE ISBN = '${id}'
-      `);
+      await db.query({
+        text: `
+          UPDATE BOOK
+          SET 
+            ${ISBN ? `ISBN = $1,` : ``}
+            ${Title ? `Title = $2,` : ``}
+            ${AuthorName ? `AuthorName = $3,` : ``}
+            ${PublisherName ? `PublisherName = $4,` : ``}
+            ${SuggestedRetailPrice ? `SuggestedRetailPrice = $5` : ``}
+          WHERE ISBN = $6
+        `,
+        values: [
+          ISBN,
+          Title,
+          AuthorName,
+          PublisherName,
+          SuggestedRetailPrice,
+          id,
+        ],
+      });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -262,15 +320,21 @@ export const updateBookDetails = async (req, res) => {
 
   if (Genre) {
     try {
-      await db.query(`
-        DELETE FROM GENRE
-        WHERE bookID = '${ISBN ? ISBN : id}'
-      `);
+      await db.query({
+        text: `
+          DELETE FROM GENRE
+          WHERE bookID = $1
+        `,
+        values: [ISBN ?? id],
+      });
       for (let g of Genre) {
-        await db.query(`
-          INSERT INTO GENRE (bookID, genre)
-          VALUES ('${id}', '${g}')
-        `);
+        await db.query({
+          text: `
+            INSERT INTO GENRE (bookID, genre)
+            VALUES ($1, $2)
+          `,
+          values: [id, g],
+        });
       }
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -287,16 +351,19 @@ export const updateBookDetails = async (req, res) => {
 export const deleteBook = async (req, res) => {
   // Auth of admin
   const user_id = req.authorization_id;
-  if (user_id !== "admin") { 
+  if (user_id !== "admin") {
     return res.status(403).json({ error: "You are not authorized." });
   }
 
   const { id } = req.params; // ISBN of the book
   try {
-    await db.query(`
-      DELETE FROM BOOK
-      WHERE ISBN = '${id}'
-    `);
+    await db.query({
+      text: `
+        DELETE FROM BOOK
+        WHERE ISBN = $1
+      `,
+      values: [id],
+    });
     return res.status(200).json({
       data: {
         BookID: id,
