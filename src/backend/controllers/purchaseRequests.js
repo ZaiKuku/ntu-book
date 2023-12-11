@@ -111,6 +111,45 @@ export const addRequest = async (req, res) => {
   }
 };
 
+// Delete purchase request
+export const deleteRequest = async (req, res) => {
+  const { id: usedBookId } = req.params;
+  const BuyerID = req.authorization_id;
+
+  try {
+    const usedBookExistenceQuery = {
+      text: "SELECT * FROM usedbook WHERE usedbookid = $1",
+      values: [usedBookId],
+    };
+    const usedBookExistenceResult = await db.query(usedBookExistenceQuery);
+    if (!usedBookExistenceResult.rowCount)
+      return res.status(404).json({ error: "Used book not found" });
+    const requestExistenceQuery = {
+      text: `
+        SELECT * FROM purchaserequest 
+        WHERE usedbookid = $1
+        AND buyerid = $2
+      `,
+      values: [usedBookId, BuyerID],
+    };
+    const requestExistenceResult = await db.query(requestExistenceQuery);
+    if (!requestExistenceResult.rowCount)
+      return res
+        .status(404)
+        .json({ error: "Purchase request for this used book not found" });
+    const query = {
+      text: `
+      DELETE FROM purchaserequest
+      WHERE buyerid = $1 AND usedbookid = $2`,
+      values: [BuyerID, usedBookId],
+    };
+    await db.query(query);
+    return res.status(200);
+  } catch (error) {
+    return res.status(500).json({ error });
+  }
+};
+
 // Add rating
 export const addRating = async (req, res) => {
   const { id: usedBookId } = req.params;
