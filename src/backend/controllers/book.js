@@ -279,8 +279,18 @@ export const updateBookDetails = async (req, res) => {
   }
 
   const { id } = req.params; // ISBN of the book
-  let { ISBN, Title, Genre, AuthorName, PublisherName, SuggestedRetailPrice } =
-    req.body; // Updated values
+  let { ISBN, Title, Genre, AuthorName, PublisherName, SuggestedRetailPrice } = req.body; // Updated values
+
+  const checkBook = await db.query({
+    text: `
+      SELECT * FROM BOOK WHERE ISBN = $1
+    `,
+    values: [id],
+  });
+  if (checkBook.rows.length === 0) {
+    return res.status(404).json({ error: "Book not found." });
+  }
+  
   if (
     !ISBN &&
     !Title &&
@@ -357,6 +367,17 @@ export const deleteBook = async (req, res) => {
   }
 
   const { id } = req.params; // ISBN of the book
+
+  const checkBook = await db.query({
+    text: `
+      SELECT * FROM BOOK WHERE ISBN = $1
+    `,
+    values: [id],
+  });
+  if (checkBook.rows.length === 0) {
+    return res.status(404).json({ error: "Book not found." });
+  }
+
   try {
     await db.query({
       text: `
