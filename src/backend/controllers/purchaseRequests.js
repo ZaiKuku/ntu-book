@@ -144,7 +144,7 @@ export const deleteRequest = async (req, res) => {
       values: [BuyerID, usedBookId],
     };
     await db.query(query);
-    return res.status(200);
+    return res.status(200).json();
   } catch (error) {
     return res.status(500).json({ error });
   }
