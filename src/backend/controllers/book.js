@@ -142,7 +142,8 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
           ub.askingPrice AS AskingPrice, 
           ub.bookCondition AS BookCondition
         FROM USEDBOOK AS ub
-        WHERE ub.bookid = $1
+        LEFT JOIN Purchase AS p ON ub.UsedBookID = p.UsedBookID
+        WHERE ub.BookID = $1 AND p.UsedBookID IS NULL
       `,
       values: [id],
     });
