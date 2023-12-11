@@ -13,6 +13,7 @@ import {
   addRequest,
   addRating,
   addPurchase,
+  deleteRequest,
 } from "../controllers/purchaseRequests.js";
 import { authorization } from "../utils/authorization.js";
 import express from "express";
@@ -55,5 +56,8 @@ router.post("/:id/rate", authorization, toLowerCase, addRating);
 
 // POST /api/usedbook/:id/purchase - Add a purchase (not request)
 router.post("/:id/purchase", authorization, toLowerCase, addPurchase);
+
+// DELETE /api/usedbook/:id/request - Delete a request
+router.delete("/:id/request", authorization, toLowerCase, deleteRequest);
 
 export default router;
