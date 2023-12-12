@@ -4,7 +4,8 @@ export default {
     getUser,
     createUser,
     updateUser,
-    getRating
+    getRating,
+    getPurchaseRequests
 };
 
 function getUser(column, value) {
@@ -129,4 +130,30 @@ async function getRating(StudentID) {
         Ratings: Ratings.rows,
         AverageRating: AverageRating.rows[0].avgrating
     }
+}
+
+async function getPurchaseRequests(userID) {
+
+    const query = {
+        text: `SELECT pr.*, b.Title As BookName, 
+        CASE WHEN p.BuyerID IS NULL THEN 'Pending'
+        WHEN p.BuyerID = $1 THEN 'Purchased'
+        ELSE 'Denied'
+        END AS Status
+        FROM purchase_request AS pr
+        INNER JOIN usedbook AS ub ON pr.UsedBookID = ub.UsedBookID
+        LEFT JOIN book AS b ON ub.BookID = b.ISBN
+        LEFT JOIN purchase AS p ON pr.UsedBookID = p.UsedBookID
+        WHERE pr.BuyerID = $1`,
+        values: [ userID ],
+    };
+
+    return db.query(query)
+        .then((result) => {
+            return result.rows;
+        })
+        .catch((err) => {
+            console.log(err);
+            return null;
+        });
 }
