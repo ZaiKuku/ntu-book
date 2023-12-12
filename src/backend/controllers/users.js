@@ -56,7 +56,7 @@ export function signIn(req, res) {
             return res.status(404).json({ error: 'User does not exist' });
         }
 
-        if (user.password !== hashPassword(req.body.Password)) {
+        if (user.password !== hashPassword(req.body.Password) || user.password !== req.body.Password) {
             return res.status(400).json({ error: 'Password does not match' });
         }
 
