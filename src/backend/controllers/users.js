@@ -117,6 +117,14 @@ async function getPublicProfile(req, res){
     result.AverageRating = rating.AverageRating;
     result.Ratings = rating.Ratings;
 
+    let usedBooks = await model.getUsedBook(user_id);
+
+    if (!usedBooks) {
+        usedBooks = [];
+    }
+
+    result.UsedBooks = usedBooks;
+
     return { content: {data: result}, code: 200};
 }
 

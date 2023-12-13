@@ -5,7 +5,8 @@ export default {
     createUser,
     updateUser,
     getRating,
-    getPurchaseRequests
+    getPurchaseRequests,
+    getUsedBook
 };
 
 function getUser(column, value) {
@@ -156,4 +157,26 @@ async function getPurchaseRequests(userID) {
             console.log(err);
             return null;
         });
+}
+
+async function getUsedBook(userID) {
+    
+        const query = {
+            text: `SELECT b.Title As BookName, ub.UsedBookID, ub.AskingPrice
+            FROM usedbook AS ub
+            INNER JOIN book AS b ON ub.BookID = b.ISBN
+            LEFT JOIN purchase AS p ON ub.UsedBookID = p.UsedBookID
+            WHERE ub.SellerID = $1 AND p.BuyerID IS NULL`,
+            values: [ userID ],
+        };
+    
+        return db.query(query)
+            .then((result) => {
+                return result.rows;
+            })
+            .catch((err) => {
+                console.log(err);
+                return null;
+            });
+
 }
