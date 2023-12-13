@@ -140,7 +140,7 @@ async function getPurchaseRequests(userID) {
         WHEN p.BuyerID = $1 THEN 'Purchased'
         ELSE 'Denied'
         END AS Status
-        FROM purchase_request AS pr
+        FROM purchaserequest AS pr
         INNER JOIN usedbook AS ub ON pr.UsedBookID = ub.UsedBookID
         LEFT JOIN book AS b ON ub.BookID = b.ISBN
         LEFT JOIN purchase AS p ON pr.UsedBookID = p.UsedBookID
