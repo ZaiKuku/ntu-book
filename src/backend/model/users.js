@@ -1,3 +1,4 @@
+import { time } from "console";
 import {db} from "../index.js";
 
 export default {
@@ -8,6 +9,40 @@ export default {
     getPurchaseRequests,
     getUsedBook
 };
+
+function reformatTimestamp(timestamp) {
+
+    // Make the timestamp 2023-09-24T14:28:11.000Z (object type: timestamp) into 2023-09-24 14:28:11 format (object type: string)
+
+    let year = timestamp.getFullYear();
+    let month = timestamp.getMonth() + 1;
+    let day = timestamp.getDate();
+    let hour = timestamp.getHours();
+    let minute = timestamp.getMinutes();
+    let second = timestamp.getSeconds();
+    
+    if (month < 10) {
+        month = '0' + month;
+    }
+
+    if (day < 10) {
+        day = '0' + day;
+    }
+
+    if (hour < 10) {
+        hour = '0' + hour;
+    }
+
+    if (minute < 10) {
+        minute = '0' + minute;
+    }
+
+    if (second < 10) {
+        second = '0' + second;
+    }
+    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+}
+
 
 function getUser(column, value) {
 
@@ -126,6 +161,15 @@ async function getRating(StudentID) {
 
     AverageRating = await db.query(avgRatingQuery);
 
+    for (let i = 0; i < Ratings.rows.length; i++) {
+        Ratings.rows[i].StudentID = parseInt(Ratings.rows[i].studentid);
+        Ratings.rows[i].StarsCount = parseInt(Ratings.rows[i].starscount);
+        Ratings.rows[i].Review = Ratings.rows[i].review;
+        delete Ratings.rows[i].studentid;
+        delete Ratings.rows[i].starscount;
+        delete Ratings.rows[i].review;
+    }
+
 
     return {
         Ratings: Ratings.rows,
@@ -136,7 +180,7 @@ async function getRating(StudentID) {
 async function getPurchaseRequests(userID) {
 
     const query = {
-        text: `SELECT pr.*, b.Title As BookName, 
+        text: `SELECT pr.UsedBookID, pr.RequestTimestamp, b.Title As BookName, 
         CASE WHEN p.BuyerID IS NULL THEN 'Pending'
         WHEN p.BuyerID = $1 THEN 'Purchased'
         ELSE 'Denied'
@@ -151,6 +195,21 @@ async function getPurchaseRequests(userID) {
 
     return db.query(query)
         .then((result) => {
+
+            for (let i = 0; i < result.rows.length; i++) {
+                result.rows[i].UsedBookID = parseInt(result.rows[i].usedbookid);
+                result.rows[i].RequestTimestamp = result.rows[i].requesttimestamp;
+                result.rows[i].BookName = result.rows[i].bookname;
+                result.rows[i].Status = result.rows[i].status;
+                delete result.rows[i].usedbookid;
+                delete result.rows[i].requesttimestamp;
+                delete result.rows[i].bookname;
+                delete result.rows[i].status;
+
+                result.rows[i].RequestTimestamp = reformatTimestamp(result.rows[i].RequestTimestamp);
+
+            }
+
             return result.rows;
         })
         .catch((err) => {
@@ -172,6 +231,14 @@ async function getUsedBook(userID) {
     
         return db.query(query)
             .then((result) => {
+                for (let i = 0; i < result.rows.length; i++) {
+                    result.rows[i].AskingPrice = parseFloat(result.rows[i].askingprice);
+                    result.rows[i].UsedBookID = parseInt(result.rows[i].usedbookid);
+                    result.rows[i].BookName = result.rows[i].bookname;
+                    delete result.rows[i].askingprice;
+                    delete result.rows[i].usedbookid;
+                    delete result.rows[i].bookname;
+                }
                 return result.rows;
             })
             .catch((err) => {
