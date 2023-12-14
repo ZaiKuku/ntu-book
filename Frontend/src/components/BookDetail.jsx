@@ -19,6 +19,8 @@ import { useRouter } from "next/router";
 import { useCookies } from "react-cookie";
 import usePostPurchaseReqest from "../hooks/usePostPurchaseReqest";
 import sweetAlert from "sweetalert";
+import useGetRequestsOfAUser from "../hooks/useGetRequestsOfAUser";
+import { CLIENT_PUBLIC_FILES_PATH } from "next/dist/shared/lib/constants";
 
 const CommentData = [
   {
@@ -43,6 +45,7 @@ export default function BookDetail() {
   const [sellerData, setSellerData] = useState([]);
   const [selected, setSelected] = useState(sellerData?.UsedBookID);
   const [usedbookdetail, setUsedBookDetail] = useState([]);
+  const [requestInfo, setRequestInfo] = useState([]);
 
   const comments = CommentData.map((comment) => (
     <ListItem key={comment.CommenterID + comment.CommentTimestamp}>
@@ -94,7 +97,9 @@ export default function BookDetail() {
 
   useEffect(() => {
     try {
-      getBookInfo();
+      if (id) {
+        getBookInfo();
+      }
     } catch (error) {
       console.error("Error:", error);
     }
@@ -106,6 +111,24 @@ export default function BookDetail() {
     }
   }, [id, sellerData]);
 
+  useEffect(() => {
+    if (information) {
+      useRequestInfo();
+    }
+  }, [information, selected]);
+
+  const useRequestInfo = async () => {
+    try {
+      const RequestInfoData = await useGetRequestsOfAUser(
+        cookies.token,
+        information?.UsedBookID
+      );
+      setRequestInfo(RequestInfoData.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const request = requestInfo.RequestTimestamp || false;
   const getBookInfo = async () => {
     const { id } = router.query;
     try {
@@ -146,14 +169,8 @@ export default function BookDetail() {
         cookies.token,
         information.UsedBookID
       );
-      console.log(response);
-      sweetAlert(
-        "Success",
-        "Your purchase request has been sent to the seller",
-        "success"
-      );
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -197,7 +214,13 @@ export default function BookDetail() {
 
             <div className="flex flex-row gap-1 w-full">{chips}</div>
             <div className="py-12">
-              <Button onClick={handleBuyNow}>Buy Now</Button>
+              <Button
+                onClick={handleBuyNow}
+                disabled={request}
+                variant="gradient"
+              >
+                Buy Now
+              </Button>
             </div>
           </CardBody>
         </Card>

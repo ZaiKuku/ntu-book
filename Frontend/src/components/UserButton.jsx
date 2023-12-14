@@ -18,12 +18,12 @@ export default function UserButton() {
   const router = useRouter();
 
   const ToPersonalPage = () => {
-    router.push("/PersonalPage/0");
+    router.push(`/PersonalPage/${cookies.id}`);
   };
 
   const Tohome = () => {
     removeCookie("token");
-    router.push("/");
+    window.location.assign("/");
   };
 
   return (

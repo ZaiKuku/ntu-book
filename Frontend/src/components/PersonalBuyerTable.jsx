@@ -11,7 +11,11 @@ import {
   Tooltip,
   Input,
 } from "@material-tailwind/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useGetUsedBookRequests from "../hooks/useGetUsedBookRequests";
+import { useRouter } from "next/router";
+import { useCookies } from "react-cookie";
+import useGetUserFullProfile from "../hooks/useGetUserFullProfile";
 
 const TABLE_HEAD = ["Listed Books", "Price", "Order Placed Date", "Status", ""];
 
@@ -47,7 +51,37 @@ const TABLE_ROWS = [
 ];
 
 export default function PersonalBuyerTable() {
+  const router = useRouter();
+  const { id } = router.query;
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
+  const [cookies, setCookie] = useCookies(["token"]);
+  const [usedBookRequests, setUsedBookRequests] = useState([]);
+  const [userFullProfile, setUserFullProfile] = useState([]);
+
+  useEffect(() => {
+    if (id) {
+      // getUsedBookRequests();
+      getUserFullProfile();
+    }
+  }, [id]);
+
+  const getUsedBookRequests = async () => {
+    const data = await useGetUsedBookRequests(cookies.token, id);
+    console.log(data);
+    setUsedBookRequests(data);
+  };
+
+  const getUserFullProfile = async () => {
+    console.log("fetching user full profile...");
+    try {
+      const { data } = await useGetUserFullProfile(cookies.token, id);
+      console.log(data);
+      setUserFullProfile(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Card className="max-h-[70vh] m-8 w-[80vw]">
       <CardHeader floated={false} shadow={false} className="rounded-none">

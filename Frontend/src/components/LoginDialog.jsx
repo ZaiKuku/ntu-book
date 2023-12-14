@@ -37,7 +37,12 @@ export default function LoginDialog() {
         maxAge: 30 * 24 * 60 * 60,
         path: "/",
       });
+      setCookie("id", body.StudentID, {
+        maxAge: 30 * 24 * 60 * 60,
+        path: "/",
+      });
       handleOpen();
+      window.location.reload();
     } catch (error) {
       console.log(error);
     }
@@ -62,8 +67,13 @@ export default function LoginDialog() {
         maxAge: 30 * 24 * 60 * 60,
         path: "/",
       });
+      setCookie("id", body.StudentID, {
+        maxAge: 30 * 24 * 60 * 60,
+        path: "/",
+      });
 
       handleOpen();
+      window.location.reload();
     } catch (error) {
       console.log(error);
     }

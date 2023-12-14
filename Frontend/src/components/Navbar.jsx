@@ -86,15 +86,6 @@ export default function NavbarNTU() {
     }
   }, [query]);
 
-  const getBookInfo = async () => {
-    try {
-      const data = await useSearchBooks(query, cookies.token, searchby);
-      setSearchResult(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const searchResultList = searchResult?.data?.slice(0, 5).map((book) => (
     <ListItem
       onClick={() => {
@@ -116,7 +107,7 @@ export default function NavbarNTU() {
         <Typography
           as="a"
           href="#"
-          className="mr-4 cursor-pointer py-1.5 text-lg text-white"
+          className="mr-4 cursor-pointer py-1.5 text-[30px] text-white font-bold leading-relaxed inline-block whitespace-nowrap uppercase"
         >
           NTU BOOK
         </Typography>
