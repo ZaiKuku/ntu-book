@@ -1,4 +1,4 @@
-import { db } from "../index.js";
+import { pool } from "../index.js";
 
 export const searchBooks = async (req, res) => {
   const bookName = req.query.BookName;
@@ -12,8 +12,10 @@ export const searchBooks = async (req, res) => {
       .json({ error: "At least one search parameter is required." });
   }
 
-  // I am not sure the below SQL is correct or not
-  try {
+  let db;
+  try {    
+    db = await pool.connect();
+
     const bookQueryValues = [
       bookName ? "%" + bookName + "%" : "%",
       authorName ? "%" + authorName + "%" : "%",
@@ -86,8 +88,10 @@ export const searchBooks = async (req, res) => {
         };
       })
     );
+    db.release();
     return res.status(200).json({ data: books });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error: error.message });
   }
 };
@@ -100,7 +104,9 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
       .json({ error: "ID of the book (ISBN) is required." });
   }
 
+  let db;
   try {
+    db = await pool.connect();
     const bookInfoQuery = await db.query({
       text: `
         SELECT b.Title, b.PublisherName
@@ -110,6 +116,7 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
       values: [id],
     });
     if (bookInfoQuery.rows.length === 0) {
+      db.release();
       return res.status(404).json({ error: "Book not found." });
     }
     const bookInfo = bookInfoQuery.rows[0];
@@ -154,6 +161,7 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
       BookCondition: book.bookcondition,
     }));
 
+    db.release();
     return res.status(200).json({
       data: {
         Title: bookInfo.title,
@@ -164,6 +172,7 @@ export const getBookInfoAndUsedBooks = async (req, res) => {
       },
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error: error.message });
   }
 };
@@ -180,7 +189,9 @@ export const addTextBookInfo = async (req, res) => {
     return res.status(400).json({ error: "All fields are required." });
   }
 
+  let db;
   try {
+    db = await pool.connect();
     const checkBook = await db.query({
       text: `
         SELECT * FROM BOOK WHERE ISBN = $1
@@ -188,6 +199,7 @@ export const addTextBookInfo = async (req, res) => {
       values: [BookID],
     });
     if (checkBook.rows.length === 0) {
+      db.release();
       return res
         .status(404)
         .json({ error: "Book with that ISBN does not exist." });
@@ -200,6 +212,7 @@ export const addTextBookInfo = async (req, res) => {
       values: [SerialNumber, Semester],
     });
     if (checkCourse.rows.length === 0) {
+      db.release();
       return res.status(404).json({
         error: "Course with that SerialNumber and Semester does not exist.",
       });
@@ -212,12 +225,14 @@ export const addTextBookInfo = async (req, res) => {
       `,
       values: [BookID, SerialNumber, Semester],
     });
+    db.release();
     return res.status(200).json({
       data: {
         BookID: BookID,
       },
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error: error.message });
   }
 };
@@ -242,7 +257,9 @@ export const addBook = async (req, res) => {
     return res.status(400).json({ error: "All fields are required." });
   }
 
+  let db;
   try {
+    db = await pool.connect();
     await db.query({
       text: `
         INSERT INTO BOOK (ISBN, Title, PublisherName, SuggestedRetailPrice, AuthorName)
@@ -261,12 +278,14 @@ export const addBook = async (req, res) => {
       });
     }
 
+    db.release();
     return res.status(200).json({
       data: {
         ISBN: ISBN,
       },
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error: error.message });
   }
 };
@@ -281,6 +300,7 @@ export const updateBookDetails = async (req, res) => {
   const { id } = req.params; // ISBN of the book
   let { ISBN, Title, Genre, AuthorName, PublisherName, SuggestedRetailPrice } = req.body; // Updated values
 
+  const db = await pool.connect();
   const checkBook = await db.query({
     text: `
       SELECT * FROM BOOK WHERE ISBN = $1
@@ -288,6 +308,7 @@ export const updateBookDetails = async (req, res) => {
     values: [id],
   });
   if (checkBook.rows.length === 0) {
+    db.release();
     return res.status(404).json({ error: "Book not found." });
   }
   
@@ -299,6 +320,7 @@ export const updateBookDetails = async (req, res) => {
     !PublisherName &&
     !SuggestedRetailPrice
   ) {
+    db.release();
     return res.status(400).json({ error: "At least one field is required." });
   }
 
@@ -325,6 +347,7 @@ export const updateBookDetails = async (req, res) => {
         ],
       });
     } catch (error) {
+      db.release();
       return res.status(500).json({ error: error.message });
     }
   }
@@ -348,10 +371,12 @@ export const updateBookDetails = async (req, res) => {
         });
       }
     } catch (error) {
+      db.release();
       return res.status(500).json({ error: error.message });
     }
   }
 
+  db.release();
   return res.status(200).json({
     data: {
       BookID: ISBN ? ISBN : id,
@@ -368,6 +393,7 @@ export const deleteBook = async (req, res) => {
 
   const { id } = req.params; // ISBN of the book
 
+  const db = await pool.connect();
   const checkBook = await db.query({
     text: `
       SELECT * FROM BOOK WHERE ISBN = $1
@@ -375,6 +401,7 @@ export const deleteBook = async (req, res) => {
     values: [id],
   });
   if (checkBook.rows.length === 0) {
+    db.release();
     return res.status(404).json({ error: "Book not found." });
   }
 
@@ -386,12 +413,14 @@ export const deleteBook = async (req, res) => {
       `,
       values: [id],
     });
+    db.release();
     return res.status(200).json({
       data: {
         BookID: id,
       },
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error: error.message });
   }
 };
