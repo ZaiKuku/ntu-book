@@ -232,7 +232,7 @@ async function getUsedBook(userID) {
         return db.query(query)
             .then((result) => {
                 for (let i = 0; i < result.rows.length; i++) {
-                    result.rows[i].AskingPrice = parseFloat(result.rows[i].askingprice);
+                    result.rows[i].AskingPrice = parseInt(result.rows[i].askingprice);
                     result.rows[i].UsedBookID = parseInt(result.rows[i].usedbookid);
                     result.rows[i].BookName = result.rows[i].bookname;
                     delete result.rows[i].askingprice;
