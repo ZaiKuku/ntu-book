@@ -56,7 +56,7 @@ export function signIn(req, res) {
             return res.status(404).json({ error: 'User does not exist' });
         }
 
-        if (user.password !== hashPassword(req.body.Password)) {
+        if (user.password !== hashPassword(req.body.Password) && user.password != req.body.Password) {
             return res.status(400).json({ error: 'Password does not match' });
         }
 
@@ -95,14 +95,14 @@ export function updateProfile(req, res) {
     });
 }
 
-export async function getProfile(req, res) {
+async function getPublicProfile(req, res){
     let result = {};
 
     const user_id = req.params.id;
 
     let user = await model.getUser('StudentID', user_id);
     if (!user) {
-        return res.status(404).json({ error: 'User does not exist' });
+        return { content: {error: 'User does not exist'}, code: 404};
     }
 
     result.StudentID = user.studentid;
@@ -111,15 +111,50 @@ export async function getProfile(req, res) {
     let rating = await model.getRating(user_id);
 
     if (!rating) {
-        return res.status(404).json({ error: 'User does not exist' });
+        return { content: {error: 'User does not exist'}, code: 404};
     }
 
     result.AverageRating = rating.AverageRating;
     result.Ratings = rating.Ratings;
 
-    return res.status(200).json({data: result});
+    let usedBooks = await model.getUsedBook(user_id);
+
+    if (!usedBooks) {
+        usedBooks = [];
+    }
+
+    result.UsedBooks = usedBooks;
+
+    return { content: {data: result}, code: 200};
 }
 
-export function getPrivateProfile(req, res) {
-    // To be implemented
+export async function getProfile(req, res) {
+    let result = await getPublicProfile(req, res);
+    return res.status(result.code).json(result.content);
+}
+
+export async function getPrivateProfile(req, res) {
+
+    const user_id = req.params.id;
+
+    if (user_id !== req.authorization_id) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    let result = await getPublicProfile(req, res);
+
+    if (result.code !== 200) {
+        return res.status(result.code).json(result.content);
+    }
+
+    let purchaseRequests = await model.getPurchaseRequests(user_id);
+
+    if (!purchaseRequests) {
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    result.content.data.PurchaseRequests = purchaseRequests;
+
+    return res.status(result.code).json(result.content);
+
 }
