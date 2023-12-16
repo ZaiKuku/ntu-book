@@ -13,13 +13,54 @@ import {
   Input,
   Textarea,
 } from "@material-tailwind/react";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Button } from "@material-tailwind/react";
 import { useRouter } from "next/router";
+import { useCookies } from "react-cookie";
+import usePostUsedBook from "../../hooks/usePostUsedBook";
+import useSearchBooks from "../../hooks/useSearchBooks";
 
 export default function AddNewBookPage() {
   const [image, setImage] = useState(null);
   const router = useRouter();
+  const [cookies, setCookie] = useCookies(["token"]);
+  const [query, setQuery] = useState("");
+  const [searchResult, setSearchResult] = useState([]);
+
+  useEffect(() => {
+    if (!cookies.token) {
+      router.push("/login");
+    }
+  }, []);
+
+  const getSearchResult = async () => {
+    const response = await useSearchBooks(query);
+    setSearchResult(response);
+  };
+
+  useEffect(() => {
+    if (query) {
+      getSearchResult();
+    }
+    setTimeout(() => {
+      if (query.length > 0) {
+        setQuery("");
+      }
+    }, 1000);
+  }, [query]);
+
+  const PostUsedBook = async (e) => {
+    e.preventDefault();
+    const body = {
+      AdditionalDetails: e.target.AdditionalInfo.value,
+      AskingPrice: e.target.Price.value,
+      BookPicture: image,
+      BookCondition: e.target.Condition.value,
+      BookID: e.target.BookID.value,
+    };
+    const response = await usePostUsedBook(cookies.token, body);
+    console.log(response);
+  };
 
   const Cancel = () => {
     router.push("/");
@@ -29,7 +70,10 @@ export default function AddNewBookPage() {
     <div className="flex flex-col items-center  min-h-screen w-screen">
       <main className="flex flex-col items-center w-full ">
         <Navbar />
-        <form className="flex flex-row gap-6 mt-10 w-1/2 ">
+        <form
+          className="flex flex-row gap-6 mt-10 w-1/2 "
+          onSubmit={PostUsedBook}
+        >
           <Card className="w-full max-w-[52rem] flex-row bg-gray-200">
             <CardHeader
               shadow={false}
@@ -81,6 +125,7 @@ export default function AddNewBookPage() {
                 labelProps={{
                   className: "before:content-none after:content-none",
                 }}
+                name="BookTitle"
               />
 
               <Input
@@ -90,9 +135,10 @@ export default function AddNewBookPage() {
                 labelProps={{
                   className: "before:content-none after:content-none",
                 }}
+                name="Price"
               />
 
-              <Textarea label="Addtional Information" />
+              <Textarea label="Addtional Information" name="AdditionalInfo" />
 
               <div className="py-12 flex flex-row gap-4 justify-center">
                 <Button className="w-32">Add Book</Button>

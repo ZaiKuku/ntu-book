@@ -18,28 +18,16 @@ import useGetBookInfoAndUsedBookIds from "../hooks/useGetBookInfoAndUsedBookIds"
 import { useRouter } from "next/router";
 import { useCookies } from "react-cookie";
 import usePostPurchaseReqest from "../hooks/usePostPurchaseReqest";
-import sweetAlert from "sweetalert";
 import useGetRequestsOfAUser from "../hooks/useGetRequestsOfAUser";
-import { CLIENT_PUBLIC_FILES_PATH } from "next/dist/shared/lib/constants";
-
-const CommentData = [
-  {
-    CommenterID: "b12345678",
-    Comment: "Where can we meet?",
-    CommentTimestamp: "1970-01-02 00:00:01.000000",
-  },
-  {
-    CommenterID: "b12345679",
-    Comment: "推!",
-    CommentTimestamp: "1970-01-01 00:00:01.000000",
-  },
-];
+import useGetUsedBookComments from "../hooks/useGetUsedBookComments";
+import usePostComment from "../hooks/usePostComment";
 
 export default function BookDetail() {
   const setSelectedItem = (value) => setSelected(value);
   const router = useRouter();
   const { id } = router.query;
   const [comment, setComment] = useState("");
+  const [CommentData, setCommentData] = useState([]);
   const [usedBookData, setUsedBookData] = useState([]);
   const [cookies, setCookie] = useCookies(["token"]);
   const [sellerData, setSellerData] = useState([]);
@@ -47,7 +35,7 @@ export default function BookDetail() {
   const [usedbookdetail, setUsedBookDetail] = useState([]);
   const [requestInfo, setRequestInfo] = useState([]);
 
-  const comments = CommentData.map((comment) => (
+  const comments = CommentData?.map((comment) => (
     <ListItem key={comment.CommenterID + comment.CommentTimestamp}>
       <ListItemPrefix>
         <Avatar variant="circular" alt="candice" src="/user.png" />
@@ -87,11 +75,29 @@ export default function BookDetail() {
     (seller) => seller.UsedBookID === selected
   )[0];
 
+  useEffect(() => {
+    if (selected) {
+      getComments();
+      return;
+    }
+  }, [selected]);
+
+  const getComments = async () => {
+    const res = await useGetUsedBookComments(cookies.token, selected);
+    console.log(res);
+    setCommentData(res?.data);
+  };
+
   const submitComment = (e) => {
     e.preventDefault();
 
-    // TODO: submit comment to backend
-
+    const body = {
+      Comment: comment,
+    };
+    const { data } = usePostComment(cookies.token, selected, body);
+    if (data) {
+      setCommentData([...CommentData, data]);
+    }
     setComment("");
   };
 
@@ -229,32 +235,44 @@ export default function BookDetail() {
           <List>
             <Typography variant="h4">Sellers</Typography>
             <List className="flex flex-row flex-wrap h-[40vh] justify-between flex-wrap overflow-auto no-scrollbar">
-              {sellers}
+              {sellers?.length > 0 ? (
+                sellers
+              ) : (
+                <ListItem disabled>
+                  <div className="flex text-center justify-center items-center w-full h-full">
+                    <Typography variant="h6" color="blue-gray">
+                      No Seller
+                    </Typography>
+                  </div>
+                </ListItem>
+              )}
             </List>
           </List>
         </Card>
       </div>
-      <Card className="max-h-[40vh] w-[50vw]">
-        <CardHeader shadow={false} floated={false}>
-          <Typography variant="h4">Comments</Typography>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-4">
-          <List className="flex flex-row flex-wrap justify-between flex-wrap overflow-auto no-scrollbar">
-            {comments}
-          </List>
-          <form onSubmit={submitComment}>
-            <Input
-              placeholder="Add a comment"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-              onChange={(e) => setComment(e.target.value)}
-              value={comment}
-            />
-          </form>
-        </CardBody>
-      </Card>
+      {selected && (
+        <Card className="max-h-[40vh] w-[50vw]">
+          <CardHeader shadow={false} floated={false}>
+            <Typography variant="h4">Comments</Typography>
+          </CardHeader>
+          <CardBody className="flex flex-col gap-4 ">
+            <List className="flex flex-row flex-wrap justify-between flex-wrap overflow-auto no-scrollbar max-h-[20vh]">
+              {comments}
+            </List>
+            <form onSubmit={submitComment}>
+              <Input
+                placeholder="Add a comment"
+                className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+                labelProps={{
+                  className: "before:content-none after:content-none",
+                }}
+                onChange={(e) => setComment(e.target.value)}
+                value={comment}
+              />
+            </form>
+          </CardBody>
+        </Card>
+      )}
     </div>
   );
 }

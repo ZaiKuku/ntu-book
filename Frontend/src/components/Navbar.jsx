@@ -19,7 +19,7 @@ import UserButton from "./UserButton";
 import { useCookies } from "react-cookie";
 import useSearchBooks from "@/hooks/useSearchBooks";
 
-export default function NavbarNTU() {
+export default function NavbarNTU({ Admin = false }) {
   const [openNav, setOpenNav] = useState(false);
   const dispatch = useDispatch();
   const handleOpen = () => dispatch(setOpenLogin(true));
@@ -113,47 +113,56 @@ export default function NavbarNTU() {
         </Typography>
 
         <div className="flex flex-row gap-6">
-          <div className="w-56">
-            <Select label="Search By" value={searchby} onChange={setSearchBy}>
-              <Option value="BookName" onClick={() => setSearchBy("BookName")}>
-                Book Title
-              </Option>
-              <Option
-                value="CourseName"
-                onClick={() => setSearchBy("CourseName")}
-              >
-                Course
-              </Option>
-              <Option value="DeptCode" onClick={() => setSearchBy("DeptCode")}>
-                Department
-              </Option>
-              <Option value="ISBN" onClick={() => setSearchBy("ISBN")}>
-                ISBN
-              </Option>
-              <Option
-                value="AuthorName"
-                onClick={() => setSearchBy("AuthorName")}
-              >
-                Author
-              </Option>
-            </Select>
-          </div>
-          <div
-            className="relative flex w-full gap-2 md:w-max"
-            ref={searchInputRef}
-          >
-            <Input
-              type="search"
-              color="white"
-              label="Search..."
-              className="pr-20"
-              containerProps={{
-                className: "w-[200px]",
-              }}
-              onChange={(e) => setQuery(e.target.value)}
-              defaultValue="python"
-            />
-            {/* {searchResult.data?.length > 0 && showResults && (
+          {!Admin && (
+            <div className="w-56">
+              <Select label="Search By" value={searchby} onChange={setSearchBy}>
+                <Option
+                  value="BookName"
+                  onClick={() => setSearchBy("BookName")}
+                >
+                  Book Title
+                </Option>
+                <Option
+                  value="CourseName"
+                  onClick={() => setSearchBy("CourseName")}
+                >
+                  Course
+                </Option>
+                <Option
+                  value="DeptCode"
+                  onClick={() => setSearchBy("DeptCode")}
+                >
+                  Department
+                </Option>
+                <Option value="ISBN" onClick={() => setSearchBy("ISBN")}>
+                  ISBN
+                </Option>
+                <Option
+                  value="AuthorName"
+                  onClick={() => setSearchBy("AuthorName")}
+                >
+                  Author
+                </Option>
+              </Select>
+            </div>
+          )}
+          {!Admin && (
+            <div
+              className="relative flex w-full gap-2 md:w-max"
+              ref={searchInputRef}
+            >
+              <Input
+                type="search"
+                color="white"
+                label="Search..."
+                className="pr-20"
+                containerProps={{
+                  className: "w-[200px]",
+                }}
+                onChange={(e) => setQuery(e.target.value)}
+                defaultValue="python"
+              />
+              {/* {searchResult.data?.length > 0 && showResults && (
               <List
                 className="absolute top-10 w-full bg-white"
                 style={{ zIndex: 1000 }}
@@ -161,7 +170,8 @@ export default function NavbarNTU() {
                 {searchResultList}
               </List>
             )} */}
-          </div>
+            </div>
+          )}
 
           {!LoggedIn ? (
             <div className="flex items-center gap-x-1">
