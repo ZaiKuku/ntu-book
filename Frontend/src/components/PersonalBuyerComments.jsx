@@ -12,74 +12,35 @@ import {
   Input,
   rating,
 } from "@material-tailwind/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Rating from "@mui/material/Rating";
 
-const TABLE_HEAD = [
-  "Listed Books",
-  "Price",
-  "Order Placed Date",
-  "Rating",
-  "Comment",
-];
+const TABLE_HEAD = ["Listed Books", "Order Placed Date", "Rating", "Comment"];
 
-const TABLE_ROWS = [
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$2,500",
-    date: "Wed 3:00pm",
-    rating: 5,
-    comment:
-      "Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!",
-  },
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$2,500",
-    date: "Wed 3:00pm",
-    rating: 5,
-    comment:
-      "Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!",
-  },
-];
+export default function PersonalBuyerComments({ userFullProfile }) {
+  const [TABLE_ROWS, setTABLE_ROWS] = useState();
 
-export default function PersonalBuyerComments() {
-  const [openCommentDialog, setOpenCommentDialog] = useState(false);
+  useEffect(() => {
+    if (userFullProfile) {
+      if (userFullProfile.Ratings.length === 0) {
+        setTABLE_ROWS(null);
+      } else {
+        setTABLE_ROWS(userFullProfile.Ratings);
+      }
+    }
+  }, [userFullProfile]);
+
   return (
     <Card className="max-h-[70vh] m-8 w-[80vw]">
       <CardHeader floated={false} shadow={false} className="rounded-none">
         <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Comments
+              Ratings
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
-              These are comments history.
+              These are Ratins received from buyers.
             </Typography>
-          </div>
-          <div className="flex w-full shrink-0 gap-2 md:w-max">
-            <div className="w-full md:w-72">
-              <Input
-                label="Search"
-                icon={
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                    />
-                  </svg>
-                }
-              />
-            </div>
           </div>
         </div>
       </CardHeader>
@@ -104,7 +65,7 @@ export default function PersonalBuyerComments() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(
+            {TABLE_ROWS?.map(
               ({ img, title, amount, date, rating, comment }, index) => {
                 const isLast = index === TABLE_ROWS.length - 1;
                 const classes = isLast
@@ -160,40 +121,16 @@ export default function PersonalBuyerComments() {
                 );
               }
             )}
+            {!TABLE_ROWS && (
+              <tr>
+                <td className="p-4 text-center" colSpan={6}>
+                  <Typography color="gray">No Ratings yet.</Typography>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </CardBody>
-      <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Button variant="outlined" size="sm">
-          Previous
-        </Button>
-        <div className="flex items-center gap-2">
-          <IconButton variant="outlined" size="sm">
-            1
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            2
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            3
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            ...
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            8
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            9
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            10
-          </IconButton>
-        </div>
-        <Button variant="outlined" size="sm">
-          Next
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

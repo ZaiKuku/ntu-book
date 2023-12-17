@@ -13,46 +13,60 @@ import {
 } from "@material-tailwind/react";
 import { useState } from "react";
 
-const TABLE_HEAD = ["Listed Books", "Price", "Listed Date", "Orders Placed"];
-
-const TABLE_ROWS = [
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$2,500",
-    date: "Wed 3:00pm",
-    ordersPlaced: "5",
-  },
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$5,000",
-    date: "Wed 1:00pm",
-    ordersPlaced: "5",
-  },
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$3,400",
-    date: "Mon 7:40pm",
-    ordersPlaced: "5",
-  },
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$3,400",
-    date: "Mon 7:40pm",
-    ordersPlaced: "5",
-  },
+const TABLE_HEAD = [
+  "Listed Books",
+  "Price",
+  "Listed Date",
+  "Orders Placed",
+  "Buyers",
 ];
+
+// const TABLE_ROWS = [
+//   {
+//     img: "/b2.jpg",
+//     title: "Title",
+//     amount: "$2,500",
+//     date: "Wed 3:00pm",
+//     ordersPlaced: "5",
+//   },
+//   {
+//     img: "/b2.jpg",
+//     title: "Title",
+//     amount: "$5,000",
+//     date: "Wed 1:00pm",
+//     ordersPlaced: "5",
+//   },
+//   {
+//     img: "/b2.jpg",
+//     title: "Title",
+//     amount: "$3,400",
+//     date: "Mon 7:40pm",
+//     ordersPlaced: "5",
+//   },
+//   {
+//     img: "/b2.jpg",
+//     title: "Title",
+//     amount: "$3,400",
+//     date: "Mon 7:40pm",
+//     ordersPlaced: "5",
+//   },
+// ];
+import { useEffect } from "react";
 
 import { useRouter } from "next/router";
 
-export default function PersonalSellerTable() {
+export default function PersonalSellerTable({ userFullProfile }) {
+  const [TABLE_ROWS, setTABLE_ROWS] = useState([]);
   const router = useRouter();
   const handleAddNewBook = () => {
     router.push("/AddBookPage");
   };
+
+  useEffect(() => {
+    if (userFullProfile) {
+      setTABLE_ROWS(userFullProfile.UsedBook);
+    }
+  }, [userFullProfile]);
 
   return (
     <Card className="max-h-[70vh] m-8 w-[80vw]">
@@ -76,7 +90,7 @@ export default function PersonalSellerTable() {
         <table className="w-full min-w-max table-auto text-left">
           <thead>
             <tr>
-              {TABLE_HEAD.map((head) => (
+              {TABLE_HEAD?.map((head) => (
                 <th
                   key={head}
                   className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
@@ -93,7 +107,7 @@ export default function PersonalSellerTable() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(
+            {TABLE_ROWS?.map(
               ({ img, title, amount, date, ordersPlaced }, index) => {
                 const isLast = index === TABLE_ROWS.length - 1;
                 const classes = isLast
@@ -143,44 +157,25 @@ export default function PersonalSellerTable() {
                     <td className={classes}>
                       <div className="w-max">{ordersPlaced}</div>
                     </td>
+                    <td className={classes}>
+                      <Button color="lightBlue" size="sm">
+                        View Buyers
+                      </Button>
+                    </td>
                   </tr>
                 );
               }
             )}
+            {!TABLE_ROWS && (
+              <tr>
+                <td className="p-4 text-center" colSpan={6}>
+                  <Typography color="gray">No listed books yet.</Typography>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </CardBody>
-      <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Button variant="outlined" size="sm">
-          Previous
-        </Button>
-        <div className="flex items-center gap-2">
-          <IconButton variant="outlined" size="sm">
-            1
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            2
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            3
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            ...
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            8
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            9
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            10
-          </IconButton>
-        </div>
-        <Button variant="outlined" size="sm">
-          Next
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

@@ -19,7 +19,7 @@ import UserButton from "./UserButton";
 import { useCookies } from "react-cookie";
 import useSearchBooks from "@/hooks/useSearchBooks";
 
-export default function NavbarNTU({ Admin = false }) {
+export default function NavbarNTU({ show = false }) {
   const [openNav, setOpenNav] = useState(false);
   const dispatch = useDispatch();
   const handleOpen = () => dispatch(setOpenLogin(true));
@@ -113,7 +113,7 @@ export default function NavbarNTU({ Admin = false }) {
         </Typography>
 
         <div className="flex flex-row gap-6">
-          {!Admin && (
+          {show && (
             <div className="w-56">
               <Select label="Search By" value={searchby} onChange={setSearchBy}>
                 <Option
@@ -146,7 +146,7 @@ export default function NavbarNTU({ Admin = false }) {
               </Select>
             </div>
           )}
-          {!Admin && (
+          {show && (
             <div
               className="relative flex w-full gap-2 md:w-max"
               ref={searchInputRef}

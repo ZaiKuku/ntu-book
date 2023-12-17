@@ -27,7 +27,7 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col items-center  min-h-screen w-screen">
       <main className="flex flex-col items-center w-full gap-4">
-        <Navbar Admin={true} />
+        <Navbar />
 
         <Card className="w-full max-w-[52rem] flex-row bg-gray-200">
           <CardBody className="w-full flex flex-col">

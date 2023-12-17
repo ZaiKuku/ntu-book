@@ -12,8 +12,10 @@ import {
   ListItemPrefix,
   Input,
   Textarea,
+  Select,
+  Option,
 } from "@material-tailwind/react";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@material-tailwind/react";
 import { useRouter } from "next/router";
 import { useCookies } from "react-cookie";
@@ -34,30 +36,33 @@ export default function AddNewBookPage() {
   }, []);
 
   const getSearchResult = async () => {
-    const response = await useSearchBooks(query);
+    const body = {
+      BookName: query,
+    };
+    const response = await useSearchBooks(body, cookies.token);
     setSearchResult(response);
   };
 
   useEffect(() => {
-    if (query) {
-      getSearchResult();
-    }
     setTimeout(() => {
-      if (query.length > 0) {
-        setQuery("");
+      if (query) {
+        getSearchResult();
       }
     }, 1000);
   }, [query]);
+  console.log(query);
 
   const PostUsedBook = async (e) => {
     e.preventDefault();
+
     const body = {
       AdditionalDetails: e.target.AdditionalInfo.value,
       AskingPrice: e.target.Price.value,
-      BookPicture: image,
       BookCondition: e.target.Condition.value,
-      BookID: e.target.BookID.value,
+      BookID: e.target.ISBN.value,
+      BookPicture: image,
     };
+    // console.log(body);
     const response = await usePostUsedBook(cookies.token, body);
     console.log(response);
   };
@@ -65,6 +70,29 @@ export default function AddNewBookPage() {
   const Cancel = () => {
     router.push("/");
   };
+
+  const chooseBook = (book) => {
+    console.log(book);
+    const bookIDInput = document.getElementsByName("ISBN")[0];
+    bookIDInput.setAttribute("value", book.ISBN);
+    bookIDInput.setAttribute("readOnly", true);
+  };
+
+  const ResultItems = searchResult?.data?.slice(0, 5).map((book) => (
+    <Option
+      value={book?.ISBN}
+      onClick={() => chooseBook(book)}
+      className="flex flex-row items-center gap-4"
+    >
+      <div className="flex flex-col">
+        <Typography color="gray">
+          {book?.Title.length > 30
+            ? book?.Title.slice(0, 30) + "..."
+            : book?.Title}
+        </Typography>
+      </div>
+    </Option>
+  ));
 
   return (
     <div className="flex flex-col items-center  min-h-screen w-screen">
@@ -118,14 +146,55 @@ export default function AddNewBookPage() {
               </label>
             </CardHeader>
             <CardBody className="w-full gap-4 flex flex-col">
+              {searchResult?.data?.length > 0 ? (
+                <div className="flex flex-row gap-4">
+                  <Select
+                    size="lg"
+                    placeholder="Book Title"
+                    name="BookTitleSelector"
+                    label={query}
+                  >
+                    {ResultItems}
+                  </Select>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setQuery("");
+                      setSearchResult([]);
+                    }}
+                  >
+                    Clean Search
+                  </Button>
+                </div>
+              ) : (
+                <Input
+                  size="lg"
+                  placeholder="Book Title"
+                  className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+                  labelProps={{
+                    className: "before:content-none after:content-none",
+                  }}
+                  name="BookTitle"
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              )}
               <Input
                 size="lg"
-                placeholder="Book Title"
+                placeholder="ISBN"
                 className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
                 labelProps={{
                   className: "before:content-none after:content-none",
                 }}
-                name="BookTitle"
+                name="ISBN"
+              />
+              <Input
+                size="lg"
+                placeholder="Condition"
+                className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+                labelProps={{
+                  className: "before:content-none after:content-none",
+                }}
+                name="Condition"
               />
 
               <Input
@@ -141,7 +210,9 @@ export default function AddNewBookPage() {
               <Textarea label="Addtional Information" name="AdditionalInfo" />
 
               <div className="py-12 flex flex-row gap-4 justify-center">
-                <Button className="w-32">Add Book</Button>
+                <Button className="w-32" type="submit">
+                  Add Book
+                </Button>
                 <Button variant="outlined" className="w-32" onClick={Cancel}>
                   Cancel
                 </Button>

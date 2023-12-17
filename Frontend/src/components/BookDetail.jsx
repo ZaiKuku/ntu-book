@@ -84,7 +84,6 @@ export default function BookDetail() {
 
   const getComments = async () => {
     const res = await useGetUsedBookComments(cookies.token, selected);
-    console.log(res);
     setCommentData(res?.data);
   };
 
@@ -179,7 +178,7 @@ export default function BookDetail() {
       console.log(error);
     }
   };
-
+  console.log(CommentData);
   return (
     <div className="flex flex-col gap-6 w-[80vw] justify-center items-center">
       <div className="flex flex-row gap-6">
