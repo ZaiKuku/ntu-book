@@ -9,21 +9,38 @@ import {
   Textarea,
 } from "@material-tailwind/react";
 import { useState } from "react";
+import usePostBook from "../../hooks/usePostBook";
+import { useCookies } from "react-cookie";
 
 export default function AdminPage() {
   const [submitMode, setSubmitMode] = useState(false);
+  const [cookies] = useCookies(["token"]);
 
   const action = (e) => {
     e.preventDefault();
+
     if (submitMode === "AddBook") {
-      console.log("AddBook");
+      const body = {
+        ISBN: e.target.ISBN.value,
+        Title: e.target.BookTitle.value,
+        Author: e.target.Author.value,
+        Genre: e.target.Genre.value.split(","),
+        PublisherName: e.target.PublisherName.value,
+        SuggestedRetailPrice: e.target.SuggestedRetailPrice.value,
+      };
+      console.log(body);
+      try {
+        const res = usePostBook(cookies.token, body);
+      } catch (err) {
+        console.log(err);
+      }
     } else if (submitMode === "UpdateBookDetails") {
       console.log("UpdateBookDetails");
     } else if (submitMode === "DeleteBook") {
       console.log("DeleteBook");
     }
   };
-  console.log(submitMode);
+
   return (
     <div className="flex flex-col items-center  min-h-screen w-screen">
       <main className="flex flex-col items-center w-full gap-4">
@@ -94,16 +111,22 @@ export default function AdminPage() {
 
               <div className="py-12 flex flex-row gap-4 justify-center">
                 <ButtonGroup size="lg" rounded={false}>
-                  <Button submit onClick={() => setSubmitMode("AddBook")}>
+                  <Button
+                    type="submit"
+                    onClick={() => setSubmitMode("AddBook")}
+                  >
                     Add Book
                   </Button>
                   <Button
-                    submit
+                    type="submit"
                     onClick={() => setSubmitMode("UpdateBookDetails")}
                   >
                     Update Book Details
                   </Button>
-                  <Button submit onClick={() => setSubmitMode("DeleteBook")}>
+                  <Button
+                    type="submit"
+                    onClick={() => setSubmitMode("DeleteBook")}
+                  >
                     Delete Book
                   </Button>
                 </ButtonGroup>

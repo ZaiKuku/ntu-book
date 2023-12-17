@@ -1,7 +1,7 @@
 import axios from "axios";
 import sweetAlert from "sweetalert";
 
-export default function usePostComment(token, body) {
+export default function usePostBook(token, body) {
   const api = process.env.API_URL;
   const apiUrl = `${api}/api/book`;
   console.log(token);
