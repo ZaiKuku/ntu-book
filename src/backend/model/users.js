@@ -97,6 +97,7 @@ async function updateUser(StudentID, SchoolEmail, Username, Fname, Lname, Passwo
     const currentUser = await getUser('StudentID', StudentID);
 
     if (currentUser == null) {
+        db.release();
         return null;
     }
 
