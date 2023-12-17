@@ -40,6 +40,3 @@ try {
 } catch (error) {
   console.log(error.message);
 }
-
-
-export const db = pool;
