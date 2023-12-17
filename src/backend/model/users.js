@@ -1,5 +1,4 @@
-import { time } from "console";
-import {db} from "../index.js";
+import {pool} from "../index.js";
 
 export default {
     getUser,
@@ -44,7 +43,10 @@ function reformatTimestamp(timestamp) {
 }
 
 
-function getUser(column, value) {
+async function getUser(column, value) {
+
+    let db;
+    db = await pool.connect();
 
     const query = {
         text: `SELECT * FROM users WHERE ${column} = $1`,
@@ -53,15 +55,20 @@ function getUser(column, value) {
 
     return db.query(query)
         .then((result) => {
+            db.release();
             return result.rows[0];
         })
         .catch((err) => {
+            db.release();
             console.log(err);
             return null;
         });
 }
 
-function createUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
+async function createUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
+
+    let db;
+    db = await pool.connect();
 
     const query = {
         text: `INSERT INTO users (StudentID, SchoolEmail, Username, Fname, Lname, Password) VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -70,9 +77,11 @@ function createUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
 
     return db.query(query)
         .then((result) => {
+            db.release();
             return StudentID;
         })
         .catch((err) => {
+            db.release();
             console.log(err);
             return null;
         });
@@ -81,6 +90,9 @@ function createUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
 
 async function updateUser(StudentID, SchoolEmail, Username, Fname, Lname, Password) {
     // If an attribute is NULL or undefined, do not overwrite the existing column with None, just keep the original value
+
+    let db;
+    db = await pool.connect();
 
     const currentUser = await getUser('StudentID', StudentID);
 
@@ -115,6 +127,7 @@ async function updateUser(StudentID, SchoolEmail, Username, Fname, Lname, Passwo
 
     return db.query(query)
         .then(() => {
+            db.release();
             return {
                 StudentID: StudentID,
                 SchoolEmail: SchoolEmail,
@@ -124,12 +137,16 @@ async function updateUser(StudentID, SchoolEmail, Username, Fname, Lname, Passwo
             };
         })
         .catch((err) => {
+            db.release();
             console.log(err);
             return null;
         });
 }
 
 async function getRating(StudentID) {
+
+    let db;
+    db = await pool.connect();
 
     const currRatingQuery = `WITH currRating AS (
         SELECT r.*, ub.SellerID, p.BuyerID FROM rating AS r
@@ -170,6 +187,7 @@ async function getRating(StudentID) {
         delete Ratings.rows[i].review;
     }
 
+    db.release();
 
     return {
         Ratings: Ratings.rows,
@@ -178,6 +196,9 @@ async function getRating(StudentID) {
 }
 
 async function getPurchaseRequests(userID) {
+
+    let db;
+    db = await pool.connect();
 
     const query = {
         text: `SELECT pr.UsedBookID, pr.RequestTimestamp, b.Title As BookName, 
@@ -195,6 +216,7 @@ async function getPurchaseRequests(userID) {
 
     return db.query(query)
         .then((result) => {
+            db.release();
 
             for (let i = 0; i < result.rows.length; i++) {
                 result.rows[i].UsedBookID = parseInt(result.rows[i].usedbookid);
@@ -213,12 +235,16 @@ async function getPurchaseRequests(userID) {
             return result.rows;
         })
         .catch((err) => {
+            db.release();
             console.log(err);
             return null;
         });
 }
 
 async function getUsedBook(userID) {
+
+        let db;
+        db = await pool.connect();
     
         const query = {
             text: `SELECT b.Title As BookName, ub.UsedBookID, ub.AskingPrice
@@ -231,6 +257,7 @@ async function getUsedBook(userID) {
     
         return db.query(query)
             .then((result) => {
+                db.release();
                 for (let i = 0; i < result.rows.length; i++) {
                     result.rows[i].AskingPrice = parseInt(result.rows[i].askingprice);
                     result.rows[i].UsedBookID = parseInt(result.rows[i].usedbookid);
@@ -242,6 +269,7 @@ async function getUsedBook(userID) {
                 return result.rows;
             })
             .catch((err) => {
+                db.release();
                 console.log(err);
                 return null;
             });
