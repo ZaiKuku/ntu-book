@@ -85,12 +85,14 @@ export const addRequest = async (req, res) => {
   const db = await pool.connect();
 
   try {
+    await db.query("BEGIN");
     const usedBookExistenceQuery = {
-      text: "SELECT * FROM usedbook WHERE usedbookid = $1",
+      text: "SELECT * FROM usedbook WHERE usedbookid = $1 FOR UPDATE",
       values: [usedBookId],
     };
     const usedBookExistenceResult = await db.query(usedBookExistenceQuery);
     if (!usedBookExistenceResult.rowCount) {
+      await db.query("ROLLBACK");
       db.release();
       return res.status(404).json({ error: "Used book not found" });
     }
@@ -104,6 +106,7 @@ export const addRequest = async (req, res) => {
     };
     const requestExistenceResult = await db.query(requestExistenceQuery);
     if (requestExistenceResult.rowCount) {
+      await db.query("ROLLBACK");
       db.release();
       return res
         .status(400)
@@ -116,6 +119,7 @@ export const addRequest = async (req, res) => {
       values: [BuyerID, usedBookId],
     };
     const result = await db.query(query);
+    await db.query("COMMIT");
     db.release();
     return res.status(200).json({
       data: {
@@ -125,6 +129,7 @@ export const addRequest = async (req, res) => {
       },
     });
   } catch (error) {
+    await db.query("ROLLBACK");
     db.release();
     return res.status(500).json({ error });
   }
