@@ -1,4 +1,4 @@
-import { db } from "../index.js";
+import { pool } from "../index.js";
 
 // input formatting
 export function toLowerCase(req, res, next) {
@@ -10,6 +10,7 @@ export function toLowerCase(req, res, next) {
 // Get used book details
 export const getUsedBook = async (req, res) => {
   const { id: usedBookId } = req.params;
+  const db = await pool.connect();
 
   try {
     const query = {
@@ -20,9 +21,12 @@ export const getUsedBook = async (req, res) => {
       values: [usedBookId],
     };
     const result = await db.query(query);
-    if (!result.rows.length)
+    if (!result.rows.length) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
+    }
     const usedBook = result.rows[0];
+    db.release();
     return res.status(200).json({
       data: {
         UsedBookID: usedBookId,
@@ -38,6 +42,7 @@ export const getUsedBook = async (req, res) => {
     });
   } catch (error) {
     const message = "Failed to get used book details. Reason: " + error.message;
+    db.release();
     return res.status(500).json({ error: message });
   }
 };
@@ -45,6 +50,7 @@ export const getUsedBook = async (req, res) => {
 // Get used book comments
 export const getComments = async (req, res) => {
   const { id: usedBookId } = req.params;
+  const db = await pool.connect();
 
   try {
     const existenceQuery = {
@@ -52,8 +58,10 @@ export const getComments = async (req, res) => {
       values: [usedBookId],
     };
     const existenceResult = await db.query(existenceQuery);
-    if (!existenceResult.rowCount)
+    if (!existenceResult.rowCount) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
+    }
     const commentsQuery = {
       text: `SELECT commenterid, content, commenttimestamp 
       FROM comments WHERE usedbookid = $1
@@ -68,9 +76,11 @@ export const getComments = async (req, res) => {
         CommentTimestamp: comment.commenttimestamp,
       };
     });
+    db.release();
     return res.status(200).json({ data });
   } catch (error) {
     const message = "Failed to get comments. Reason: " + error.message;
+    db.release();
     return res.status(500).json({ error: message });
   }
 };
@@ -82,6 +92,7 @@ export const addUsedBook = async (req, res) => {
   if (!(BookPicture && BookCondition && AskingPrice && BookID))
     return res.status(400).json({ error: "Please provide required details" });
   const SellerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const query = {
@@ -98,6 +109,7 @@ export const addUsedBook = async (req, res) => {
       ],
     };
     const result = await db.query(query);
+    db.release();
     return res.status(200).json({
       data: {
         UsedBookID: result.rows[0].usedbookid,
@@ -112,6 +124,7 @@ export const addUsedBook = async (req, res) => {
     });
   } catch (error) {
     const message = "Failed to add used book. Reason: " + error.message;
+    db.release();
     return res.status(500).json({ error: message });
   }
 };
@@ -122,6 +135,7 @@ export const addComment = async (req, res) => {
   const { Comment } = req.body;
   if (!Comment) return res.status(400).json({ error: "Missing comment" });
   const SellerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const query = {
@@ -131,6 +145,7 @@ export const addComment = async (req, res) => {
       values: [usedBookId, SellerID, Comment],
     };
     const result = await db.query(query);
+    db.release();
     return res.status(200).json({
       data: {
         CommenterID: SellerID,
@@ -140,6 +155,7 @@ export const addComment = async (req, res) => {
     });
   } catch (error) {
     const message = "Failed to add comment. Reason: " + error.message;
+    db.release();
     return res.status(500).json({ error: message });
   }
 };
@@ -150,6 +166,7 @@ export const updateUsedBook = async (req, res) => {
   const { AdditionalDetails, BookPicture, BookCondition, AskingPrice, BookID } =
     req.body;
   const SellerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const existenceQuery = {
@@ -157,10 +174,14 @@ export const updateUsedBook = async (req, res) => {
       values: [usedBookId],
     };
     const existenceResult = await db.query(existenceQuery);
-    if (!existenceResult.rowCount)
+    if (!existenceResult.rowCount) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
-    if (SellerID !== existenceResult.rows[0].sellerid && SellerID !== "admin")
+    }
+    if (SellerID !== existenceResult.rows[0].sellerid && SellerID !== "admin") {
+      db.release();
       return res.status(403).json({ error: "You do not own this used book" });
+    }
     const query = {
       text: `UPDATE usedbook SET additionaldetails = $1, bookpicture = $2, bookcondition = $3, 
       askingprice = $4, bookid = $5 WHERE usedbookid = $6`,
@@ -174,6 +195,7 @@ export const updateUsedBook = async (req, res) => {
       ],
     };
     await db.query(query);
+    db.release();
     return res.status(200).json({
       data: {
         UsedBookID: usedBookId,
@@ -189,6 +211,7 @@ export const updateUsedBook = async (req, res) => {
     });
   } catch (error) {
     const message = "Failed to update used book. Reason: " + error.message;
+    db.release();
     return res.status(500).json({ error: message });
   }
 };
@@ -197,6 +220,7 @@ export const updateUsedBook = async (req, res) => {
 export const deleteUsedBook = async (req, res) => {
   const { id: usedBookId } = req.params;
   const SellerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const existenceQuery = {
@@ -204,15 +228,20 @@ export const deleteUsedBook = async (req, res) => {
       values: [usedBookId],
     };
     const existenceResult = await db.query(existenceQuery);
-    if (!existenceResult.rowCount)
+    if (!existenceResult.rowCount) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
-    if (SellerID !== existenceResult.rows[0].sellerid && SellerID !== "admin")
+    }
+    if (SellerID !== existenceResult.rows[0].sellerid && SellerID !== "admin") {
+      db.release();
       return res.status(403).json({ error: "You do not own this used book" });
+    }
     const deleteQuery = {
       text: "DELETE FROM usedbook WHERE usedbookid = $1",
       values: [usedBookId],
     };
     await db.query(deleteQuery);
+    db.release();
     return res.status(200).json({
       data: {
         UsedBookID: usedBookId,
@@ -220,6 +249,7 @@ export const deleteUsedBook = async (req, res) => {
     });
   } catch (error) {
     const message = "Failed to delete used book. Reason: " + error.message;
+    db.release();
     return res.status(500).json({ error: message });
   }
 };

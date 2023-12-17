@@ -1,9 +1,10 @@
-import { db } from "../index.js";
+import { pool } from "../index.js";
 
 // Get all requests for used book
 export const getRequests = async (req, res) => {
   const { id: usedBookId } = req.params;
   const SellerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const existenceQuery = {
@@ -11,10 +12,14 @@ export const getRequests = async (req, res) => {
       values: [usedBookId],
     };
     const existenceResult = await db.query(existenceQuery);
-    if (!existenceResult.rows.length)
+    if (!existenceResult.rows.length) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
-    if (SellerID !== existenceResult.rows[0].sellerid && SellerID !== "admin")
+    }
+    if (SellerID !== existenceResult.rows[0].sellerid && SellerID !== "admin") {
+      db.release();
       return res.status(403).json({ error: "You do not own this used book" });
+    }
     const query = {
       text: "SELECT * FROM purchaserequest WHERE usedbookid = $1",
       values: [usedBookId],
@@ -24,10 +29,12 @@ export const getRequests = async (req, res) => {
       BuyerID: req.buyerid,
       RequestTimestamp: req.requesttimestamp,
     }));
+    db.release();
     return res.status(200).json({
       data: requests,
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error });
   }
 };
@@ -36,6 +43,7 @@ export const getRequests = async (req, res) => {
 export const getRequest = async (req, res) => {
   const { id: usedBookId } = req.params;
   const BuyerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const existenceQuery = {
@@ -43,8 +51,10 @@ export const getRequest = async (req, res) => {
       values: [usedBookId],
     };
     const existenceResult = await db.query(existenceQuery);
-    if (!existenceResult.rows.length)
+    if (!existenceResult.rows.length) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
+    }
     const query = {
       text: `
         SELECT * FROM purchaserequest 
@@ -54,6 +64,7 @@ export const getRequest = async (req, res) => {
       values: [usedBookId, BuyerID],
     };
     const result = await db.query(query);
+    db.release();
     return res.status(200).json({
       data: result.rowCount
         ? {
@@ -62,6 +73,7 @@ export const getRequest = async (req, res) => {
         : {},
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error });
   }
 };
@@ -70,6 +82,7 @@ export const getRequest = async (req, res) => {
 export const addRequest = async (req, res) => {
   const { id: usedBookId } = req.params;
   const BuyerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const usedBookExistenceQuery = {
@@ -77,8 +90,10 @@ export const addRequest = async (req, res) => {
       values: [usedBookId],
     };
     const usedBookExistenceResult = await db.query(usedBookExistenceQuery);
-    if (!usedBookExistenceResult.rowCount)
+    if (!usedBookExistenceResult.rowCount) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
+    }
     const requestExistenceQuery = {
       text: `
         SELECT * FROM purchaserequest 
@@ -88,10 +103,12 @@ export const addRequest = async (req, res) => {
       values: [usedBookId, BuyerID],
     };
     const requestExistenceResult = await db.query(requestExistenceQuery);
-    if (requestExistenceResult.rowCount)
+    if (requestExistenceResult.rowCount) {
+      db.release();
       return res
         .status(400)
         .json({ error: "You have already requested this used book" });
+    }
     const query = {
       text: `INSERT INTO purchaserequest 
       (buyerid, usedbookid) 
@@ -99,6 +116,7 @@ export const addRequest = async (req, res) => {
       values: [BuyerID, usedBookId],
     };
     const result = await db.query(query);
+    db.release();
     return res.status(200).json({
       data: {
         UsedBookID: usedBookId,
@@ -107,6 +125,7 @@ export const addRequest = async (req, res) => {
       },
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error });
   }
 };
@@ -115,6 +134,7 @@ export const addRequest = async (req, res) => {
 export const deleteRequest = async (req, res) => {
   const { id: usedBookId } = req.params;
   const BuyerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const usedBookExistenceQuery = {
@@ -122,8 +142,10 @@ export const deleteRequest = async (req, res) => {
       values: [usedBookId],
     };
     const usedBookExistenceResult = await db.query(usedBookExistenceQuery);
-    if (!usedBookExistenceResult.rowCount)
+    if (!usedBookExistenceResult.rowCount) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
+    }
     const requestExistenceQuery = {
       text: `
         SELECT * FROM purchaserequest 
@@ -133,10 +155,12 @@ export const deleteRequest = async (req, res) => {
       values: [usedBookId, BuyerID],
     };
     const requestExistenceResult = await db.query(requestExistenceQuery);
-    if (!requestExistenceResult.rowCount)
+    if (!requestExistenceResult.rowCount) {
+      db.release();
       return res
         .status(404)
         .json({ error: "Purchase request for this used book not found" });
+    }
     const query = {
       text: `
       DELETE FROM purchaserequest
@@ -144,8 +168,10 @@ export const deleteRequest = async (req, res) => {
       values: [BuyerID, usedBookId],
     };
     await db.query(query);
+    db.release();
     return res.status(200).json();
   } catch (error) {
+    db.release();
     return res.status(500).json({ error });
   }
 };
@@ -161,6 +187,7 @@ export const addRating = async (req, res) => {
       .status(400)
       .json({ error: "Stars count must be between 0 and 5 inclusive" });
   const BuyerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const usedBookExistenceQuery = {
@@ -168,8 +195,10 @@ export const addRating = async (req, res) => {
       values: [usedBookId],
     };
     const usedBookExistenceResult = await db.query(usedBookExistenceQuery);
-    if (!usedBookExistenceResult.rowCount)
+    if (!usedBookExistenceResult.rowCount) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
+    }
     const purchaseExistenceQuery = {
       text: `
         SELECT * FROM purchase 
@@ -179,10 +208,12 @@ export const addRating = async (req, res) => {
       values: [usedBookId, BuyerID],
     };
     const purchaseExistenceResult = await db.query(purchaseExistenceQuery);
-    if (!purchaseExistenceResult.rowCount)
+    if (!purchaseExistenceResult.rowCount) {
+      db.release();
       return res
         .status(403)
         .json({ error: "You have not purchased this used book" });
+    }
     const ratingExistenceQuery = {
       text: `
         SELECT * FROM rating 
@@ -191,10 +222,12 @@ export const addRating = async (req, res) => {
       values: [usedBookId],
     };
     const ratingExistenceResult = await db.query(ratingExistenceQuery);
-    if (ratingExistenceResult.rowCount)
+    if (ratingExistenceResult.rowCount) {
+      db.release();
       return res
         .status(400)
         .json({ error: "You have already rated this used book" });
+    }
 
     const query = {
       text: `INSERT INTO rating 
@@ -203,6 +236,7 @@ export const addRating = async (req, res) => {
       values: [usedBookId, StarsCount, Review ?? ""],
     };
     await db.query(query);
+    db.release();
     return res.status(200).json({
       data: {
         UsedBookID: usedBookId,
@@ -211,6 +245,7 @@ export const addRating = async (req, res) => {
       },
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error });
   }
 };
@@ -221,6 +256,7 @@ export const addPurchase = async (req, res) => {
   const { BuyerID } = req.body;
   if (!BuyerID) return res.status(400).json({ error: "Missing buyer ID" });
   const SellerID = req.authorization_id;
+  const db = await pool.connect();
 
   try {
     const usedBookExistenceQuery = {
@@ -228,13 +264,17 @@ export const addPurchase = async (req, res) => {
       values: [usedBookId],
     };
     const usedBookExistenceResult = await db.query(usedBookExistenceQuery);
-    if (!usedBookExistenceResult.rowCount)
+    if (!usedBookExistenceResult.rowCount) {
+      db.release();
       return res.status(404).json({ error: "Used book not found" });
+    }
     if (
       SellerID !== usedBookExistenceResult.rows[0].sellerid &&
       SellerID !== "admin"
-    )
+    ) {
+      db.release();
       return res.status(403).json({ error: "You do not own this used book" });
+    }
     const purchaseExistenceQuery = {
       text: `
           SELECT * FROM purchase 
@@ -243,10 +283,12 @@ export const addPurchase = async (req, res) => {
       values: [usedBookId],
     };
     const purchaseExistenceResult = await db.query(purchaseExistenceQuery);
-    if (purchaseExistenceResult.rowCount)
+    if (purchaseExistenceResult.rowCount) {
+      db.release();
       return res
         .status(400)
         .json({ error: "This used book has already been sold" });
+    }
     const requestExistenceQuery = {
       text: `
           SELECT * FROM purchaserequest 
@@ -256,8 +298,10 @@ export const addPurchase = async (req, res) => {
       values: [usedBookId, BuyerID],
     };
     const requestExistenceResult = await db.query(requestExistenceQuery);
-    if (!requestExistenceResult.rowCount)
+    if (!requestExistenceResult.rowCount) {
+      db.release();
       return res.status(404).json({ error: "Request not found" });
+    }
     const query = {
       text: `INSERT INTO purchase 
       (usedbookid, buyerid)
@@ -265,6 +309,7 @@ export const addPurchase = async (req, res) => {
       values: [usedBookId, BuyerID],
     };
     const result = await db.query(query);
+    db.release();
     return res.status(200).json({
       data: {
         UsedBookID: usedBookId,
@@ -273,6 +318,7 @@ export const addPurchase = async (req, res) => {
       },
     });
   } catch (error) {
+    db.release();
     return res.status(500).json({ error });
   }
 };
