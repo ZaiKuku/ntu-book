@@ -315,7 +315,7 @@ export const addPurchase = async (req, res) => {
     const query = {
       text: `INSERT INTO purchase 
       (usedbookid, buyerid)
-      VALUES ($1, $2)`,
+      VALUES ($1, $2) RETURNING purchasetimestamp`,
       values: [usedBookId, BuyerID],
     };
     const result = await db.query(query);
