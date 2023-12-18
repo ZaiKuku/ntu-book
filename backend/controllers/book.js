@@ -11,6 +11,7 @@ export const searchBooks = async (req, res) => {
       .status(400)
       .json({ error: "At least one search parameter is required." });
   }
+  console.log("isbn: " + isbn);
 
   let db;
   try {    
@@ -37,7 +38,7 @@ export const searchBooks = async (req, res) => {
       text: `
         SELECT b.ISBN, b.Title, b.PublisherName, b.AuthorName, MIN(ub.AskingPrice) AS LowestPrice, MAX(ub.AskingPrice) AS HighestPrice 
         FROM BOOK AS b
-          JOIN USEDBOOK AS ub ON ub.bookID = b.ISBN
+          LEFT JOIN USEDBOOK AS ub ON ub.bookID = b.ISBN
           LEFT JOIN TEXTBOOK AS tb ON tb.bookID = b.ISBN
           LEFT JOIN COURSEDEPT AS cd ON cd.serialNumber = tb.serialNumber AND cd.semester = tb.semester
           LEFT JOIN COURSE AS c ON c.serialNumber = tb.serialNumber AND c.semester = tb.semester
