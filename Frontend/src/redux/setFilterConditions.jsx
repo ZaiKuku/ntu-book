@@ -20,7 +20,6 @@ const FilterConditionSlice = createSlice({
       const { searchby, query } = action.payload;
       state.query[searchby] = query;
       Object.keys(state.query).forEach((key) => {
-        console.log(key);
         if (key !== searchby) {
           state.query[key] = null;
         }

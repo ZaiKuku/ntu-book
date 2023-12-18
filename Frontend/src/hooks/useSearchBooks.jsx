@@ -5,15 +5,13 @@ export default function useSearchBooks(query, token) {
 
   const apiUrl =
     api +
-    (query.BookName
-      ? "BookName=" + query.BookName
-      : "" + query.AuthorName
-      ? "AuthorName=" + query.AuthorName
-      : "" + query.CourseName
-      ? "CourseName=" + query.CourseName
-      : "" + query.ISBN
-      ? "ISBN=" + query.ISBN
-      : "");
+    (query.BookName ? `BookName=${query.BookName}` : "") +
+    (query.Author ? `Author=${query.Author}` : "") +
+    (query.Publisher ? `Publisher=${query.Publisher}` : "") +
+    (query.ISBN ? `ISBN=${query.ISBN}` : "") +
+    (query.CourseName ? `CourseName=${query.CourseName}` : "") +
+    (query.DeptCode ? `&DeptCode=${query.DeptCode}` : "");
+  console.log(apiUrl);
 
   const fetchData = async () => {
     try {

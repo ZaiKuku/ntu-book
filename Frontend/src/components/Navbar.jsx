@@ -17,7 +17,6 @@ import { setFilterCondition } from "@/redux/setFilterConditions";
 import { useRouter } from "next/router";
 import UserButton from "./UserButton";
 import { useCookies } from "react-cookie";
-import useSearchBooks from "@/hooks/useSearchBooks";
 
 export default function NavbarNTU({ show = false }) {
   const [openNav, setOpenNav] = useState(false);
