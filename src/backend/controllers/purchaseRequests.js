@@ -108,6 +108,18 @@ export const addRequest = async (req, res) => {
         db.release();
         return res.status(404).json({ error: "Used book not found" });
       }
+      const soldCheckQuery = {
+        text: "SELECT * FROM purchase WHERE usedbookid = $1",
+        values: [usedBookId],
+      };
+      const soldCheckResult = await db.query(soldCheckQuery);
+      if (soldCheckResult.rowCount) {
+        await db.query("ROLLBACK");
+        db.release();
+        return res
+          .status(400)
+          .json({ error: "Used book has already been sold" });
+      }
       const requestExistenceQuery = {
         text: `
         SELECT * FROM purchaserequest 
