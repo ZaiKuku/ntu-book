@@ -4,7 +4,8 @@ import sweetAlert from "sweetalert";
 export default function usePostUsedBook(token, body) {
   const api = process.env.API_URL;
   const apiUrl = `${api}/api/usedbook/`;
-  console.log(token);
+  console.log(body);
+  // console.log(token);
   const fetchData = async () => {
     try {
       const response = await axios.post(apiUrl, body, {

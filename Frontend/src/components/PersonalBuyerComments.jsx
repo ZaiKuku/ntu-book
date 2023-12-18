@@ -22,7 +22,7 @@ export default function PersonalBuyerComments({ userFullProfile }) {
 
   useEffect(() => {
     if (userFullProfile) {
-      if (userFullProfile.Ratings.length === 0) {
+      if (userFullProfile.Ratings?.length === 0) {
         setTABLE_ROWS(null);
       } else {
         setTABLE_ROWS(userFullProfile.Ratings);
