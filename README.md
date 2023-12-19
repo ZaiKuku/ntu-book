@@ -18,7 +18,15 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
    ```bash
    cd backend
    ```
-2. Run the following command to start the backend service:
+2. Copy the contents of `backend/.env.example` and create a new `.env` file in the `backend` directory. Set the following variables:
+
+   - `PORT`: Port of backend server, if blank, 8000 port will be used.
+   - `PGUSER`: PostgreSQL username.
+   - `PGPASSWORD`: PostgreSQL password.
+   - `JWT_KEY`: Private key for generating JSON Web Tokens using asymmetric encryption.
+   - `ADMIN_PASSWORD`: The password of admin. When you log in as admin, the password should be the same as this.
+   
+3. Run the following command to start the backend service:
 
    ```bash
    yarn
@@ -30,7 +38,7 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
 1. Navigate to the frontend directory of the project:
 
    ```bash
-   cd frontend
+   cd Frontend
    ```
 2. Install the dependencies to download and install all the required resources for the project.
 
@@ -50,7 +58,7 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
 
   - Log in with the following credentials:
     - Username: admin
-    - Password: password
+    - Password: .env file's ADMIN_PASSWORD
   - After logging in, navigate to `/AdminPage`.
 
 ### Notes
