@@ -18,12 +18,12 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
    ```bash
    cd backend
    ```
-3. Copy the contents of `backend/env.example` and create a new `.env` file in the `backend` directory. Set the following variables:
-    - `PORT`: The server port.
-    - `PGUSER`: PostgreSQL username.
-    - `PGPASSWORD`: PostgreSQL password.
-    
-2. Run the following command to start the backend service:
+2. Copy the contents of `backend/.env.example` and create a new `.env` file in the `backend` directory. Set the following variables:
+
+   - `PORT`: The server port.
+   - `PGUSER`: PostgreSQL username.
+   - `PGPASSWORD`: PostgreSQL password.
+3. Run the following command to start the backend service:
 
    ```bash
    yarn
