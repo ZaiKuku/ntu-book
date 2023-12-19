@@ -1,6 +1,6 @@
-# ntu-secondhandbook
+# NTUBOOK
 
-A online platform designed for the second-hand books market at NTU
+An online platform designed for the second-hand books market at NTU
 
 ### Prerequisites
 
