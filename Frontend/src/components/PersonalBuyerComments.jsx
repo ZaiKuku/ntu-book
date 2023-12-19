@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import Rating from "@mui/material/Rating";
 
-const TABLE_HEAD = ["Buyer", "Rating", "Comment"];
+const TABLE_HEAD = ["UsedBook ID", "Buyer", "Rating", "Comment"];
 
 export default function PersonalBuyerComments({ userFullProfile }) {
   const [TABLE_ROWS, setTABLE_ROWS] = useState();
@@ -65,32 +65,45 @@ export default function PersonalBuyerComments({ userFullProfile }) {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS?.map(({ studentID, StarsCount, Review }, index) => {
-              const isLast = index === TABLE_ROWS.length - 1;
-              const classes = isLast
-                ? "p-4"
-                : "p-4 border-b border-blue-gray-50";
+            {TABLE_ROWS?.map(
+              ({ usedbookid, StudentID, StarsCount, Review }, index) => {
+                const isLast = index === TABLE_ROWS.length - 1;
+                const classes = isLast
+                  ? "p-4"
+                  : "p-4 border-b border-blue-gray-50";
 
-              return (
-                <tr key={Review}>
-                  <td className={classes}>
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="font-normal leading-none opacity-70"
-                    >
-                      {studentID}
-                    </Typography>
-                  </td>
-                  <td className={classes}>
-                    <Rating name="read-only" value={StarsCount} readOnly />
-                  </td>
-                  <td className={classes}>
-                    <article className="flex flex-wrap w-80">{Review}</article>
-                  </td>
-                </tr>
-              );
-            })}
+                return (
+                  <tr key={StudentID + usedbookid}>
+                    <td className={classes}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal leading-none opacity-70"
+                      >
+                        {usedbookid}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal leading-none opacity-70"
+                      >
+                        {StudentID}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
+                      <Rating name="read-only" value={StarsCount} readOnly />
+                    </td>
+                    <td className={classes}>
+                      <article className="flex flex-wrap w-80">
+                        {Review}
+                      </article>
+                    </td>
+                  </tr>
+                );
+              }
+            )}
 
             {!TABLE_ROWS && (
               <tr>

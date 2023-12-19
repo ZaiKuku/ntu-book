@@ -107,7 +107,7 @@ export default function LoginDialog() {
           <Typography className="-mb-2" variant="h6">
             Your Password
           </Typography>
-          <Input label="Password" size="lg" name="Password" />
+          <Input label="Password" size="lg" name="Password" type="password" />
         </CardBody>
         <CardFooter className="pt-0">
           <Button variant="gradient" type="submit" fullWidth>
@@ -160,7 +160,12 @@ export default function LoginDialog() {
           <Typography className="-mb-2" variant="h6">
             Your Password
           </Typography>
-          <Input label="Password" size="lg" name="Password" />
+
+          <Input label="Password" size="lg" name="Password" type="password" />
+          <Typography className="-mb-2" variant="h6">
+            Enter Password Again
+          </Typography>
+          <Input label="Enter Password Again" size="lg" type="password" />
           <Typography className="-mb-2" variant="h6">
             First Name
           </Typography>
@@ -169,10 +174,6 @@ export default function LoginDialog() {
             Last Name
           </Typography>
           <Input label="LastName" size="lg" name="LastName" />
-          <Typography className="-mb-2" variant="h6">
-            Enter Password Again
-          </Typography>
-          <Input label="Enter Password Again" size="lg" />
         </CardBody>
         <CardFooter className="pt-0">
           <Button variant="gradient" fullWidth type="submit">

@@ -48,8 +48,12 @@ export default function PersonalBuyerTable({ userFullProfile }) {
       Review: e.target.Comment.value,
       StarsCount: stars,
     };
-    const response = await usePostRating(body, cookies.token, selected);
-    console.log(response);
+    try {
+      const res = await usePostRating(body, cookies.token, selected);
+    } finally {
+      useDeleteRequest(cookies.token, selected);
+    }
+
     setOpenCommentDialog(false);
   };
 
