@@ -18,6 +18,11 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
    ```bash
    cd backend
    ```
+3. Copy the contents of `backend/env.example` and create a new `.env` file in the `backend` directory. Set the following variables:
+    - `PORT`: The server port.
+    - `PGUSER`: PostgreSQL username.
+    - `PGPASSWORD`: PostgreSQL password.
+    
 2. Run the following command to start the backend service:
 
    ```bash
@@ -30,7 +35,7 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
 1. Navigate to the frontend directory of the project:
 
    ```bash
-   cd frontend
+   cd Frontend
    ```
 2. Install the dependencies to download and install all the required resources for the project.
 
