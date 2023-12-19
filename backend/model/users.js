@@ -159,7 +159,7 @@ async function getRating(StudentID) {
     const ratingQuery = {
         text: `
         ${currRatingQuery}
-        SELECT r.BuyerID AS StudentID, r.StarsCount, r.Review FROM currRating AS r
+        SELECT r.BuyerID AS StudentID, r.StarsCount, r.Review, r.UsedBookID FROM currRating AS r
         `,
         values: [StudentID],
     };
@@ -180,9 +180,10 @@ async function getRating(StudentID) {
     AverageRating = await db.query(avgRatingQuery);
 
     for (let i = 0; i < Ratings.rows.length; i++) {
-        Ratings.rows[i].StudentID = parseInt(Ratings.rows[i].studentid);
+        Ratings.rows[i].StudentID = Ratings.rows[i].studentid;
         Ratings.rows[i].StarsCount = parseInt(Ratings.rows[i].starscount);
         Ratings.rows[i].Review = Ratings.rows[i].review;
+        Ratings.rows[i].UsedBookID = parseInt(Ratings.rows[i].usedbookid);
         delete Ratings.rows[i].studentid;
         delete Ratings.rows[i].starscount;
         delete Ratings.rows[i].review;
