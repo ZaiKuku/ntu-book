@@ -14,7 +14,7 @@ export default function BooksGroup() {
   const [bookcarditems, setBookcarditems] = useState({ data: [] });
 
   const query = useSelector((state) => state.FilterConditionSlice.query);
-
+  console.log(query);
   useEffect(() => {
     getBooksInfo();
   }, [query]);
@@ -28,6 +28,7 @@ export default function BooksGroup() {
     }
   };
 
+  console.log(bookcarditems);
   const bookcards = bookcarditems?.data.map((bookcarditem) => {
     return (
       <div
@@ -35,20 +36,16 @@ export default function BooksGroup() {
         onClick={() => handleToProductPage(bookcarditem.ISBN)}
         key={bookcarditem.ISBN}
       >
-        {query.DeptCode in bookcarditem.Departments || !query.DeptCode ? (
-          <BookCard
-            Title={bookcarditem.Title}
-            Edition={bookcarditem.Edition}
-            PublisherName={bookcarditem.PublisherName}
-            AuthorName={bookcarditem.AuthorName}
-            Genre={bookcarditem.Genre}
-            LowestPrice={bookcarditem.LowestPrice}
-            HighestPrice={bookcarditem.HighestPrice}
-            ISBN={bookcarditem.ISBN}
-          />
-        ) : (
-          <></>
-        )}
+        <BookCard
+          Title={bookcarditem.Title}
+          Edition={bookcarditem.Edition}
+          PublisherName={bookcarditem.PublisherName}
+          AuthorName={bookcarditem.AuthorName}
+          Genre={bookcarditem.Genre}
+          LowestPrice={bookcarditem.LowestPrice}
+          HighestPrice={bookcarditem.HighestPrice}
+          ISBN={bookcarditem.ISBN}
+        />
       </div>
     );
   });

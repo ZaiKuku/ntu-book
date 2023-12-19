@@ -47,4 +47,5 @@ package-lock.json
 
 /backend/node_modules
 /backend/.env
-/backend/.yarn.lock
+/backend/yarn.lock
+

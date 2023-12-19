@@ -27,7 +27,8 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
 2. Run the following command to start the backend service:
 
    ```bash
-   node index.js
+   yarn
+   yarn dev
    ```
 
 ### Start the Frontend
