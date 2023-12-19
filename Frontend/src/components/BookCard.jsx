@@ -39,9 +39,6 @@ export default function BookCard({
         <Typography color="blue-gray" className="font-medium" textGradient>
           NT${LowestPrice} ~ NT${HighestPrice}
         </Typography>
-        <Typography color="blue-gray" className="text-sm" textGradient>
-          4 賣家
-        </Typography>
       </CardBody>
       <div className="flex flex-row gap-1 p-1 w-[90%]">
         {Genre?.split(",").map((genre) => (

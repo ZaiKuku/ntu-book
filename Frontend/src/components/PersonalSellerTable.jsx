@@ -10,63 +10,81 @@ import {
   IconButton,
   Tooltip,
   Input,
+  Dialog,
+  List,
 } from "@material-tailwind/react";
 import { useState } from "react";
 
-const TABLE_HEAD = [
-  "Listed Books",
-  "Price",
-  "Listed Date",
-  "Orders Placed",
-  "Buyers",
-];
+const TABLE_HEAD = ["Listed Books", "Price", "Buyers"];
 
-// const TABLE_ROWS = [
-//   {
-//     img: "/b2.jpg",
-//     title: "Title",
-//     amount: "$2,500",
-//     date: "Wed 3:00pm",
-//     ordersPlaced: "5",
-//   },
-//   {
-//     img: "/b2.jpg",
-//     title: "Title",
-//     amount: "$5,000",
-//     date: "Wed 1:00pm",
-//     ordersPlaced: "5",
-//   },
-//   {
-//     img: "/b2.jpg",
-//     title: "Title",
-//     amount: "$3,400",
-//     date: "Mon 7:40pm",
-//     ordersPlaced: "5",
-//   },
-//   {
-//     img: "/b2.jpg",
-//     title: "Title",
-//     amount: "$3,400",
-//     date: "Mon 7:40pm",
-//     ordersPlaced: "5",
-//   },
-// ];
 import { useEffect } from "react";
-
+import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
+import useGetRequestsOfAUser from "../hooks/useGetRequestsOfAUser";
+import usePostPurchase from "../hooks/usePostPurchase";
 
 export default function PersonalSellerTable({ userFullProfile }) {
   const [TABLE_ROWS, setTABLE_ROWS] = useState([]);
   const router = useRouter();
+  const [cookies, setCookie] = useCookies(["token"]);
+  const [open, setOpen] = useState(false);
+  const [requestInfo, setRequestInfo] = useState([]);
+  const [buyers, setBuyers] = useState([]);
+  const [selected, setSelected] = useState();
+
   const handleAddNewBook = () => {
     router.push("/AddBookPage");
   };
 
   useEffect(() => {
     if (userFullProfile) {
-      setTABLE_ROWS(userFullProfile.UsedBook);
+      setTABLE_ROWS(userFullProfile.UsedBooks);
     }
   }, [userFullProfile]);
+
+  const getRequests = async (ID) => {
+    const response = await useGetRequestsOfAUser(cookies.token, ID);
+    console.log(response);
+  };
+
+  const handleOpen = async (ID) => {
+    setSelected(ID);
+    await getRequests(ID);
+    setOpen(true);
+  };
+
+  const onAccept = async (UsedBookID, ID) => {
+    const body = {
+      BuyerID: ID,
+    };
+    const response = await usePostPurchase(body, cookies.token, UsedBookID);
+    console.log(response);
+  };
+
+  useEffect(() => {
+    if (requestInfo) {
+      setBuyers(
+        requestInfo.map((buyer) => (
+          <ListItem key={buyer.BuyerID}>
+            <ListItemPrefix>
+              <Avatar variant="circular" alt="candice" src="/user.png" />
+            </ListItemPrefix>
+            <div>
+              <Typography variant="h6" color="blue-gray">
+                {buyer.BuyerID}
+              </Typography>
+              <Typography variant="small" color="gray" className="font-normal">
+                {buyer.BuyerID}
+              </Typography>
+            </div>
+            <Button name="Accept" size="sm" onClick={(BuyerID) => onAccept()}>
+              Accept
+            </Button>
+          </ListItem>
+        ))
+      );
+    }
+  }, [requestInfo]);
 
   return (
     <Card className="max-h-[70vh] m-8 w-[80vw]">
@@ -107,65 +125,51 @@ export default function PersonalSellerTable({ userFullProfile }) {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS?.map(
-              ({ img, title, amount, date, ordersPlaced }, index) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
+            {TABLE_ROWS?.map(({ AskingPrice, BookName, UsedBookID }, index) => {
+              const isLast = index === TABLE_ROWS.length - 1;
+              const classes = isLast
+                ? "p-4"
+                : "p-4 border-b border-blue-gray-50";
 
-                return (
-                  <tr
-                    key={title}
-                    className="cursor-pointer hover:bg-blue-gray-50"
-                  >
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={img}
-                          alt={title}
-                          size="md"
-                          className="border border-blue-gray-50 bg-blue-gray-50/50 object-fit p-1"
-                        />
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {title}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
+              return (
+                <tr
+                  key={UsedBookID}
+                  className="cursor-pointer hover:bg-blue-gray-50"
+                >
+                  <td className={classes}>
+                    <div className="flex items-center gap-3">
                       <Typography
                         variant="small"
                         color="blue-gray"
-                        className="font-normal"
+                        className="font-bold max-w-[30rem]"
                       >
-                        {amount}
+                        {BookName}
                       </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {date}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">{ordersPlaced}</div>
-                    </td>
-                    <td className={classes}>
-                      <Button color="lightBlue" size="sm">
-                        View Buyers
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              }
-            )}
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {AskingPrice}
+                    </Typography>
+                  </td>
+
+                  <td className={classes}>
+                    <Button
+                      color="lightBlue"
+                      size="sm"
+                      value={UsedBookID}
+                      onClick={() => handleOpen(UsedBookID)}
+                    >
+                      View Buyers
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
             {!TABLE_ROWS && (
               <tr>
                 <td className="p-4 text-center" colSpan={6}>
@@ -176,6 +180,20 @@ export default function PersonalSellerTable({ userFullProfile }) {
           </tbody>
         </table>
       </CardBody>
+      <>
+        <Dialog
+          size="xs"
+          open={open}
+          handler={setOpen}
+          className="bg-transparent shadow-none"
+        >
+          <Card className="w-full max-w-[52rem] flex-row bg-gray-200">
+            <List className="flex flex-row flex-wrap h-[40vh] justify-between flex-wrap overflow-auto no-scrollbar">
+              {buyers}
+            </List>
+          </Card>
+        </Dialog>
+      </>
     </Card>
   );
 }

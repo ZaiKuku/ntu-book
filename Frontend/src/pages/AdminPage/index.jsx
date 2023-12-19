@@ -11,6 +11,8 @@ import {
 import { useState } from "react";
 import usePostBook from "../../hooks/usePostBook";
 import { useCookies } from "react-cookie";
+import useUpdateBook from "../../hooks/useUpdateBook";
+import useDeleteBook from "../../hooks/useDeleteBook";
 
 export default function AdminPage() {
   const [submitMode, setSubmitMode] = useState(false);
@@ -18,16 +20,16 @@ export default function AdminPage() {
 
   const action = (e) => {
     e.preventDefault();
+    const body = {
+      ISBN: e.target.ISBN.value,
+      Title: e.target.BookTitle.value,
+      Author: e.target.Author.value,
+      Genre: e.target.Genre.value.split(","),
+      PublisherName: e.target.PublisherName.value,
+      SuggestedRetailPrice: e.target.SuggestedRetailPrice.value,
+    };
 
     if (submitMode === "AddBook") {
-      const body = {
-        ISBN: e.target.ISBN.value,
-        Title: e.target.BookTitle.value,
-        Author: e.target.Author.value,
-        Genre: e.target.Genre.value.split(","),
-        PublisherName: e.target.PublisherName.value,
-        SuggestedRetailPrice: e.target.SuggestedRetailPrice.value,
-      };
       console.log(body);
       try {
         const res = usePostBook(cookies.token, body);
@@ -35,10 +37,18 @@ export default function AdminPage() {
         console.log(err);
       }
     } else if (submitMode === "UpdateBookDetails") {
-      console.log("UpdateBookDetails");
+      const res = useUpdateBook(cookies.token, body);
     } else if (submitMode === "DeleteBook") {
-      console.log("DeleteBook");
+      useDeleteBook(cookies.token, body.ISBN);
     }
+
+    // 清空表單
+    e.target.ISBN.value = "";
+    e.target.BookTitle.value = "";
+    e.target.Author.value = "";
+    e.target.Genre.value = "";
+    e.target.PublisherName.value = "";
+    e.target.SuggestedRetailPrice.value = "";
   };
 
   return (

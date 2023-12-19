@@ -83,7 +83,7 @@ export default function LoginDialog() {
     setLogin(!Login);
   };
   const LoginForm = (
-    <Card className="mx-auto w-full max-w-[24rem]">
+    <Card className="mx-auto w-full max-w-[24rem] max-h-[80vh]">
       <form onSubmit={handleLogin}>
         <CardBody className="flex flex-col gap-4">
           <Typography
@@ -132,9 +132,9 @@ export default function LoginDialog() {
   );
 
   const SignUpForm = (
-    <Card className="mx-auto w-full max-w-[24rem]">
-      <form onSubmit={handleSignUp}>
-        <CardBody className="flex flex-col gap-4">
+    <Card className="mx-auto w-full max-w-[24rem] max-h-[80vh]">
+      <form onSubmit={handleSignUp} className="flex flex-col gap-4 h-full">
+        <CardBody className="flex flex-col gap-4 max-h-[60vh] overflow-scroll no-scrollbar">
           <Typography
             variant="h4"
             color="white"

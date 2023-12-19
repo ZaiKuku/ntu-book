@@ -1,13 +1,11 @@
 import axios from "axios";
 import sweetAlert from "sweetalert";
 
-export default function usePostBook(token, body) {
+export default function usePostPurchase(body, token, usedBookID) {
   const api = process.env.API_URL;
-  const apiUrl = `${api}/api/book`;
-  console.log(token);
+  const apiUrl = `${api}/api/usedbook/${usedBookID}/purchase`;
   const fetchData = async () => {
     try {
-      console.log(body);
       const response = await axios.post(apiUrl, body, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -15,7 +13,9 @@ export default function usePostBook(token, body) {
       });
 
       if (response.status === 200) {
-        sweetAlert("Success!", "Book posted!", "success");
+        // 處理獲得的資料
+        sweetAlert("Success!", "Transaction Done", "success");
+
         return response.data;
       }
       console.error("Error:", response.status);
@@ -25,7 +25,7 @@ export default function usePostBook(token, body) {
     } catch (error) {
       console.error("Error:", error);
       if (error.response.status === 400) {
-        sweetAlert("Oops!", "Comment failed!", "error");
+        sweetAlert("Oops!", "You have already sent a request!", "error");
       }
 
       // 處理錯誤

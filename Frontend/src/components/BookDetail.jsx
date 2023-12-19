@@ -71,10 +71,6 @@ export default function BookDetail() {
     </ListItem>
   ));
 
-  const information = sellerData?.filter(
-    (seller) => seller.UsedBookID === selected
-  )[0];
-
   useEffect(() => {
     if (selected) {
       getComments();
@@ -87,16 +83,15 @@ export default function BookDetail() {
     setCommentData(res?.data);
   };
 
-  const submitComment = (e) => {
+  const submitComment = async (e) => {
     e.preventDefault();
 
     const body = {
       Comment: comment,
     };
-    const { data } = usePostComment(cookies.token, selected, body);
-    if (data) {
-      setCommentData([...CommentData, data]);
-    }
+    const { data } = await usePostComment(cookies.token, selected, body);
+    setCommentData([data, ...CommentData]);
+
     setComment("");
   };
 
@@ -116,23 +111,6 @@ export default function BookDetail() {
     }
   }, [id, sellerData]);
 
-  useEffect(() => {
-    if (information) {
-      useRequestInfo();
-    }
-  }, [information, selected]);
-
-  const useRequestInfo = async () => {
-    try {
-      const RequestInfoData = await useGetRequestsOfAUser(
-        cookies.token,
-        information?.UsedBookID
-      );
-      setRequestInfo(RequestInfoData.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
   const request = requestInfo.RequestTimestamp || false;
   const getBookInfo = async () => {
     const { id } = router.query;
@@ -167,7 +145,26 @@ export default function BookDetail() {
   const chips = usedBookData?.Genres?.map((Genre) => (
     <Chip variant="ghost" value={Genre} size="sm" />
   ));
+  const information = sellerData?.filter(
+    (seller) => seller.UsedBookID == selected
+  )[0];
+  useEffect(() => {
+    if (information) {
+      useRequestInfo();
+    }
+  }, [information, selected]);
 
+  const useRequestInfo = async () => {
+    try {
+      const RequestInfoData = await useGetRequestsOfAUser(
+        cookies.token,
+        information?.UsedBookID
+      );
+      setRequestInfo(RequestInfoData.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const handleBuyNow = async () => {
     try {
       const response = await usePostPurchaseReqest(
@@ -178,7 +175,7 @@ export default function BookDetail() {
       console.log(error);
     }
   };
-  console.log(CommentData);
+  console.log(information);
   return (
     <div className="flex flex-col gap-6 w-[80vw] justify-center items-center">
       <div className="flex flex-row gap-6">
@@ -256,7 +253,7 @@ export default function BookDetail() {
           </CardHeader>
           <CardBody className="flex flex-col gap-4 ">
             <List className="flex flex-row flex-wrap justify-between flex-wrap overflow-auto no-scrollbar max-h-[20vh]">
-              {comments}
+              {comments.reverse()}
             </List>
             <form onSubmit={submitComment}>
               <Input
