@@ -6,16 +6,10 @@ An online platform designed for the second-hand books market at NTU
 
 Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
 
-### Installation
+### Database Setup
 
-1. Open the terminal and navigate to the project's root directory.
-2. Run the following command to install project dependencies:
-
-   ```bash
-   npm i
-   ```
-
-   This will download and install all the required resources for the project.
+- PostgreSQL version 16 or above is required.
+- Restore the database using the SQL file located in the `db_backup` directory.
 
 ### Start the Backend
 
@@ -38,7 +32,12 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
    ```bash
    cd frontend
    ```
-2. Run the following command to start the frontend development server:
+2. Install the dependencies to download and install all the required resources for the project.
+
+   ```bash
+   npm install
+   ```
+3. Run the following command to start the frontend development server:
 
    ```bash
    npm run dev
