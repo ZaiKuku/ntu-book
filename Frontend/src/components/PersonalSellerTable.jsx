@@ -1,8 +1,3 @@
-import { PencilIcon } from "@heroicons/react/24/solid";
-import {
-  ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
 import {
   Card,
   CardHeader,
@@ -15,50 +10,87 @@ import {
   IconButton,
   Tooltip,
   Input,
+  Dialog,
+  List,
+  ListItem,
 } from "@material-tailwind/react";
 import { useState } from "react";
- 
-const TABLE_HEAD = ["Listed Books", "Price", "Listed Date", "Orders Placed"];
- 
-const TABLE_ROWS = [
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$2,500",
-    date: "Wed 3:00pm",
-    ordersPlaced: "5",
-  },
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$5,000",
-    date: "Wed 1:00pm",
-    ordersPlaced: "5",
-  },
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$3,400",
-    date: "Mon 7:40pm",
-    ordersPlaced: "5",
-  },
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$3,400",
-    date: "Mon 7:40pm",
-    ordersPlaced: "5",
-  },
-];
 
-import { useRouter } from 'next/router'
+const TABLE_HEAD = ["Listed Books", "Price", "Buyers"];
 
- 
-export default function PersonalSellerTable() {
-    const router = useRouter()
-    const handleAddNewBook = () => {
-        router.push('/AddBookPage')
+import { useEffect } from "react";
+import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
+import useGetUsedBookRequests from "../hooks/useGetUsedBookRequests";
+import usePostPurchase from "../hooks/usePostPurchase";
+
+export default function PersonalSellerTable({ userFullProfile }) {
+  const [TABLE_ROWS, setTABLE_ROWS] = useState([]);
+  const router = useRouter();
+  const [cookies, setCookie] = useCookies(["token"]);
+  const [open, setOpen] = useState(false);
+  const [requestInfo, setRequestInfo] = useState([]);
+  const [buyers, setBuyers] = useState([]);
+  const [selected, setSelected] = useState();
+
+  const handleAddNewBook = () => {
+    router.push("/AddBookPage");
+  };
+
+  useEffect(() => {
+    if (userFullProfile) {
+      setTABLE_ROWS(userFullProfile.UsedBooks);
     }
+  }, [userFullProfile]);
+
+  const getRequests = async (ID) => {
+    const response = await useGetUsedBookRequests(ID, cookies.token);
+    setRequestInfo(response.data);
+  };
+
+  const handleOpen = async (ID) => {
+    setSelected(ID);
+    await getRequests(ID);
+    setOpen(true);
+  };
+
+  const onAccept = async (UsedBookID, ID) => {
+    const body = {
+      BuyerID: ID,
+    };
+    const response = await usePostPurchase(body, cookies.token, UsedBookID);
+    console.log(response);
+    router.reload();
+  };
+
+  useEffect(() => {
+    if (requestInfo) {
+      setBuyers(
+        requestInfo.map((buyer) => (
+          <ListItem
+            key={buyer.BuyerID}
+            className="flex justify-between h-16 border-b border-blue-gray-500"
+          >
+            <div>
+              <Typography variant="h6" color="blue-gray">
+                {buyer.BuyerID}
+              </Typography>
+              <Typography variant="small" color="gray" className="font-normal">
+                {buyer.RequestDate}
+              </Typography>
+            </div>
+            <Button
+              name="Accept"
+              size="sm"
+              onClick={() => onAccept(selected, buyer.BuyerID)}
+            >
+              Accept
+            </Button>
+          </ListItem>
+        ))
+      );
+    }
+  }, [requestInfo]);
 
   return (
     <Card className="max-h-[70vh] m-8 w-[80vw]">
@@ -72,17 +104,9 @@ export default function PersonalSellerTable() {
               These are details about the listed books.
             </Typography>
           </div>
-          
+
           <div className="flex w-full shrink-0 gap-2 md:w-max">
-            <Button onClick={handleAddNewBook}>
-                Add New Book
-            </Button>
-            <div className="w-full md:w-72">
-              <Input
-                label="Search"
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
-            </div>
+            <Button onClick={handleAddNewBook}>Add New Book</Button>
           </div>
         </div>
       </CardHeader>
@@ -90,7 +114,7 @@ export default function PersonalSellerTable() {
         <table className="w-full min-w-max table-auto text-left">
           <thead>
             <tr>
-              {TABLE_HEAD.map((head) => (
+              {TABLE_HEAD?.map((head) => (
                 <th
                   key={head}
                   className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
@@ -107,103 +131,81 @@ export default function PersonalSellerTable() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(
-              (
-                {
-                  img,
-                  title,
-                  amount,
-                  date,
-                  ordersPlaced,
+            {TABLE_ROWS?.map(({ AskingPrice, BookName, UsedBookID }, index) => {
+              const isLast = index === TABLE_ROWS.length - 1;
+              const classes = isLast
+                ? "p-4"
+                : "p-4 border-b border-blue-gray-50";
 
-                },
-                index,
-              ) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
- 
-                return (
-                  <tr key={title} className="cursor-pointer hover:bg-blue-gray-50">
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={img}
-                          alt={title}
-                          size="md"
-                          className="border border-blue-gray-50 bg-blue-gray-50/50 object-fit p-1"
-                        />
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {title}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
+              return (
+                <tr
+                  key={UsedBookID}
+                  className="cursor-pointer hover:bg-blue-gray-50"
+                >
+                  <td className={classes}>
+                    <div className="flex items-center gap-3">
                       <Typography
                         variant="small"
                         color="blue-gray"
-                        className="font-normal"
+                        className="font-bold max-w-[30rem]"
                       >
-                        {amount}
+                        {BookName}
                       </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {date}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        {ordersPlaced}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              },
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {AskingPrice}
+                    </Typography>
+                  </td>
+
+                  <td className={classes}>
+                    <Button
+                      color="lightBlue"
+                      size="sm"
+                      value={UsedBookID}
+                      onClick={() => handleOpen(UsedBookID)}
+                    >
+                      View Buyers
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
+            {!TABLE_ROWS && (
+              <tr>
+                <td className="p-4 text-center" colSpan={6}>
+                  <Typography color="gray">No listed books yet.</Typography>
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
       </CardBody>
-      <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Button variant="outlined" size="sm">
-          Previous
-        </Button>
-        <div className="flex items-center gap-2">
-          <IconButton variant="outlined" size="sm">
-            1
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            2
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            3
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            ...
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            8
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            9
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            10
-          </IconButton>
-        </div>
-        <Button variant="outlined" size="sm">
-          Next
-        </Button>
-      </CardFooter>
+      <>
+        <Dialog
+          size="xs"
+          open={open}
+          handler={setOpen}
+          className="bg-transparent shadow-none"
+        >
+          <Card className="w-full max-w-[52rem] flex-col bg-gray-200">
+            <Typography variant="h5" color="blue-gray" className="p-4">
+              Buyers
+            </Typography>
+
+            <CardBody className="w-full flex flex-col">
+              <List className="flex flex-row flex-wrap h-[40vh] justify-between flex-wrap overflow-auto no-scrollbar w-full bg-gray-300">
+                {buyers}
+              </List>
+            </CardBody>
+          </Card>
+        </Dialog>
+      </>
     </Card>
   );
 }

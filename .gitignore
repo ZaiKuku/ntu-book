@@ -44,3 +44,8 @@ package-lock.json
 .DS_Store
 /.vscode
 
+
+/backend/node_modules
+/backend/.env
+/backend/yarn.lock
+

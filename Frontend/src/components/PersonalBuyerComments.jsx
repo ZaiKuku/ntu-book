@@ -1,8 +1,3 @@
-import { PencilIcon } from "@heroicons/react/24/solid";
-import {
-  ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
 import {
   Card,
   CardHeader,
@@ -17,51 +12,35 @@ import {
   Input,
   rating,
 } from "@material-tailwind/react";
-import { useState } from "react";
-import Rating from '@mui/material/Rating';
- 
-const TABLE_HEAD = ["Listed Books", "Price", "Order Placed Date", "Rating",  "Comment"];
- 
-const TABLE_ROWS = [
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$2,500",
-    date: "Wed 3:00pm",
-    rating: 5,
-    comment: "Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!",
-  },
-  {
-    img: "/b2.jpg",
-    title: "Title",
-    amount: "$2,500",
-    date: "Wed 3:00pm",
-    rating: 5,
-    comment: "Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!Good book! I like it!",
-  }
-];
- 
-export default function PersonalBuyerComments() {
-  const [openCommentDialog, setOpenCommentDialog] = useState(false);
+import { useEffect, useState } from "react";
+import Rating from "@mui/material/Rating";
+
+const TABLE_HEAD = ["UsedBook ID", "Buyer", "Rating", "Comment"];
+
+export default function PersonalBuyerComments({ userFullProfile }) {
+  const [TABLE_ROWS, setTABLE_ROWS] = useState();
+
+  useEffect(() => {
+    if (userFullProfile) {
+      if (userFullProfile.Ratings?.length === 0) {
+        setTABLE_ROWS(null);
+      } else {
+        setTABLE_ROWS(userFullProfile.Ratings);
+      }
+    }
+  }, [userFullProfile]);
+
   return (
     <Card className="max-h-[70vh] m-8 w-[80vw]">
       <CardHeader floated={false} shadow={false} className="rounded-none">
         <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Comments
+              Ratings
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
-              These are comments history.
+              These are Ratins received from buyers.
             </Typography>
-          </div>
-          <div className="flex w-full shrink-0 gap-2 md:w-max">
-            <div className="w-full md:w-72">
-              <Input
-                label="Search"
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
-            </div>
           </div>
         </div>
       </CardHeader>
@@ -86,104 +65,56 @@ export default function PersonalBuyerComments() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(
-              (
-                {
-                  img,
-                  title,
-                  amount,
-                  date,
-                  rating,
-                  comment,
-                },
-                index,
-              ) => {
+            {TABLE_ROWS?.map(
+              ({ usedbookid, StudentID, StarsCount, Review }, index) => {
                 const isLast = index === TABLE_ROWS.length - 1;
                 const classes = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";
- 
+
                 return (
-                  <tr key={title}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={img}
-                          alt={title}
-                          size="md"
-                          className="border border-blue-gray-50 bg-blue-gray-50/50 object-fit p-1"
-                        />
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {title}
-                        </Typography>
-                      </div>
-                    </td>
+                  <tr key={StudentID + usedbookid}>
                     <td className={classes}>
                       <Typography
                         variant="small"
                         color="blue-gray"
-                        className="font-normal"
+                        className="font-normal leading-none opacity-70"
                       >
-                        {amount}
+                        {usedbookid}
                       </Typography>
                     </td>
                     <td className={classes}>
                       <Typography
                         variant="small"
                         color="blue-gray"
-                        className="font-normal"
+                        className="font-normal leading-none opacity-70"
                       >
-                        {date}
+                        {StudentID}
                       </Typography>
                     </td>
                     <td className={classes}>
-                      <Rating name="read-only" value={rating} readOnly />
+                      <Rating name="read-only" value={StarsCount} readOnly />
                     </td>
                     <td className={classes}>
-                      <article className="flex flex-wrap w-80">{comment}</article>
+                      <article className="flex flex-wrap w-80">
+                        {Review}
+                      </article>
                     </td>
                   </tr>
                 );
-              },
+              }
+            )}
+
+            {!TABLE_ROWS && (
+              <tr>
+                <td className="p-4 text-center" colSpan={6}>
+                  <Typography color="gray">No Ratings yet.</Typography>
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
       </CardBody>
-      <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Button variant="outlined" size="sm">
-          Previous
-        </Button>
-        <div className="flex items-center gap-2">
-          <IconButton variant="outlined" size="sm">
-            1
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            2
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            3
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            ...
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            8
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            9
-          </IconButton>
-          <IconButton variant="text" size="sm">
-            10
-          </IconButton>
-        </div>
-        <Button variant="outlined" size="sm">
-          Next
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

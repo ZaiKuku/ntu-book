@@ -2,21 +2,26 @@
 import axios from "axios";
 import sweetAlert from "sweetalert";
 
-export default function useSignUp(body) {
+export default function useUpdateBook(token, body) {
   // const api = process.env.API_URL;
   const api = "http://127.0.0.1:8000";
-  const apiUrl = `${api}/api/users/register`;
+  const apiUrl = `${api}/api/book/${body.ISBN}`;
 
   const fetchData = async () => {
     try {
-      const response = await axios.post(apiUrl, body, {
+      const response = await axios.put(apiUrl, body, {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (response.status === 200) {
-        console.log(response);
+        sweetAlert(
+          "Update successfully",
+          "Please click OK to continue",
+          "success"
+        );
         return response.data;
         // 處理獲得的資料
       } else {

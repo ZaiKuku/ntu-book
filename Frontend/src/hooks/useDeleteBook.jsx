@@ -1,24 +1,18 @@
 import axios from "axios";
+import sweetAlert from "sweetalert";
 
-export default function useGetBookInfoAndUsedBookIds(token, id) {
+export default function useDeleteBook(token, id) {
   const api = process.env.API_URL;
   const apiUrl = `${api}/api/book/${id}`;
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(apiUrl, {
+      const response = await axios.delete(apiUrl, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      if (response.status === 200) {
-        // 處理獲得的資料
-        return response.data;
-      }
-      console.error("Error:", response.status);
-      return null;
-      // 處理錯誤狀態
+      sweetAlert("Success!", "Book deleted!", "success");
     } catch (error) {
       console.error("Error:", error);
 

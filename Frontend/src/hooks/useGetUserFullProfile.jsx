@@ -1,23 +1,14 @@
 import axios from "axios";
 
-export default function useSearchBooks(query, token) {
-  const api = process.env.API_URL + "/api/book?";
-
-  const apiUrl =
-    api +
-    (query.BookName ? `BookName=${query.BookName}` : "") +
-    (query.Author ? `Author=${query.Author}` : "") +
-    (query.Publisher ? `Publisher=${query.Publisher}` : "") +
-    (query.ISBN ? `ISBN=${query.ISBN}` : "") +
-    (query.CourseName ? `CourseName=${query.CourseName}` : "") +
-    (query.DeptCode ? `&DeptCode=${query.DeptCode}` : "");
-  console.log(apiUrl);
+export default function useGetUserFullProfile(token, id) {
+  const api = process.env.API_URL;
+  const apiUrl = `${api}/api/users/${id}/private`;
 
   const fetchData = async () => {
     try {
+      console.log(apiUrl);
       const response = await axios.get(apiUrl, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });

@@ -3,15 +3,13 @@ import sweetAlert from "sweetalert";
 
 export default function useLogin(body) {
   const api = process.env.API_URL;
-  const apiUrl = `${api}/users/signin`;
+  const apiUrl = `${api}/api/users/signin`;
 
   const fetchData = async () => {
     try {
       const response = await axios.post(apiUrl, body);
 
       if (response.status === 200) {
-        // console.log(response.data);
-
         // 處理獲得的資料
         return response.data;
       }

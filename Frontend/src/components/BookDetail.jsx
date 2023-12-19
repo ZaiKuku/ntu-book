@@ -9,91 +9,33 @@ import {
   ListItem,
   ListItemPrefix,
   Input,
+  select,
 } from "@material-tailwind/react";
 import { useState, useEffect } from "react";
 import { Button } from "@material-tailwind/react";
 import useUsedBookDetail from "../hooks/useUsedBookDetail";
 import useGetBookInfoAndUsedBookIds from "../hooks/useGetBookInfoAndUsedBookIds";
 import { useRouter } from "next/router";
-
-const CommentData = [
-  {
-    CommenterID: "b12345678",
-    Comment: "Where can we meet?",
-    CommentTimestamp: "1970-01-02 00:00:01.000000",
-  },
-  {
-    CommenterID: "b12345679",
-    Comment: "推!",
-    CommentTimestamp: "1970-01-01 00:00:01.000000",
-  },
-];
-
-const SellersData = [
-  {
-    UsedBookID: 10,
-    AdditionalDetails: "", // empty string = no additional details
-    BookPicture: "",
-    BookCondition: 8,
-    SellerID: "b12345678",
-    ListTimestamp: "1970-01-04 00:00:01.000000",
-    AskingPrice: 500,
-  },
-  {
-    UsedBookID: 11,
-    AdditionalDetails: "", // empty string = no additional details
-    BookPicture: "url-of-image",
-    BookCondition: 8,
-    SellerID: "b12345678",
-    ListTimestamp: "1970-01-01 00:00:01.000000",
-    AskingPrice: 500,
-  },
-  {
-    UsedBookID: 12,
-    AdditionalDetails: "", // empty string = no additional details
-    BookPicture: "url-of-image",
-    BookCondition: 8,
-    SellerID: "b12345678",
-    ListTimestamp: "1970-01-01 00:00:01.000000",
-    AskingPrice: 500,
-  },
-  {
-    UsedBookID: 13,
-    AdditionalDetails: "", // empty string = no additional details
-    BookPicture: "",
-    BookCondition: 8,
-    SellerID: "b12345678",
-    ListTimestamp: "1970-01-01 00:00:01.000000",
-    AskingPrice: 500,
-  },
-];
-
-const BookInfoData = {
-  ISBN: 100000,
-  Title: "Latex 排版全書",
-  Edition: "5",
-  PublisherName: "小傑出版社",
-  AuthorName: "LC Kung",
-  Genre: "科技",
-};
-
-const UsedBooksData = [
-  {
-    UsedBookID: 1,
-  },
-  {
-    UsedBookID: 2,
-  },
-];
+import { useCookies } from "react-cookie";
+import usePostPurchaseReqest from "../hooks/usePostPurchaseReqest";
+import useGetRequestsOfAUser from "../hooks/useGetRequestsOfAUser";
+import useGetUsedBookComments from "../hooks/useGetUsedBookComments";
+import usePostComment from "../hooks/usePostComment";
 
 export default function BookDetail() {
-  const [selected, setSelected] = useState(SellersData[0].UsedBookID);
   const setSelectedItem = (value) => setSelected(value);
   const router = useRouter();
-
+  const { id } = router.query;
   const [comment, setComment] = useState("");
+  const [CommentData, setCommentData] = useState([]);
+  const [usedBookData, setUsedBookData] = useState([]);
+  const [cookies, setCookie] = useCookies(["token"]);
+  const [sellerData, setSellerData] = useState([]);
+  const [selected, setSelected] = useState(sellerData?.UsedBookID);
+  const [usedbookdetail, setUsedBookDetail] = useState([]);
+  const [requestInfo, setRequestInfo] = useState([]);
 
-  const comments = CommentData.map((comment) => (
+  const comments = CommentData?.map((comment) => (
     <ListItem key={comment.CommenterID + comment.CommentTimestamp}>
       <ListItemPrefix>
         <Avatar variant="circular" alt="candice" src="/user.png" />
@@ -109,54 +51,131 @@ export default function BookDetail() {
     </ListItem>
   ));
 
-  const sellers = SellersData?.map((seller) => (
+  const sellers = usedbookdetail?.map((seller) => (
     <ListItem
-      selected={selected === seller.UsedBookID}
-      onClick={() => setSelectedItem(seller.UsedBookID)}
+      selected={selected === seller.data.UsedBookID}
+      onClick={() => setSelectedItem(seller.data.UsedBookID)}
+      className="h-20"
     >
       <ListItemPrefix>
         <Avatar variant="circular" alt="candice" src="/user.png" />
       </ListItemPrefix>
       <div>
         <Typography variant="h6" color="blue-gray">
-          {seller.SellerID}
+          {seller.data.SellerID}
         </Typography>
         <Typography variant="small" color="gray" className="font-normal">
-          NT$ {seller.AskingPrice}
+          NT$ {seller.data.AskingPrice}
         </Typography>
       </div>
     </ListItem>
   ));
 
-  const information = SellersData.filter(
-    (seller) => seller.UsedBookID === selected
-  )[0];
+  useEffect(() => {
+    if (selected) {
+      getComments();
+      return;
+    }
+  }, [selected]);
 
-  const submitComment = (e) => {
+  const getComments = async () => {
+    const res = await useGetUsedBookComments(cookies.token, selected);
+    setCommentData(res?.data);
+  };
+
+  const submitComment = async (e) => {
     e.preventDefault();
 
-    // TODO: submit comment to backend
+    const body = {
+      Comment: comment,
+    };
+    const { data } = await usePostComment(cookies.token, selected, body);
+    setCommentData([data, ...CommentData]);
 
     setComment("");
   };
 
   useEffect(() => {
-    const { id } = router.query;
-    const cookie = document.cookie;
     try {
-      const BookInfoData = useGetBookInfoAndUsedBookIds(token, id);
-      const UsedBookData = BookInfoData.UsedBooks;
+      if (id) {
+        getBookInfo();
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (sellerData.length > 0) {
+      getUsedBookDetail();
+    }
+  }, [id, sellerData]);
+
+  const request = requestInfo.RequestTimestamp || false;
+  const getBookInfo = async () => {
+    const { id } = router.query;
+    try {
+      const BookInfoData = await useGetBookInfoAndUsedBookIds(
+        cookies.token,
+        id
+      );
+      setUsedBookData(BookInfoData.data);
+      setSellerData(BookInfoData.data.UsedBooks);
+      setSelected(BookInfoData.data.UsedBooks[0].UsedBookID);
     } catch (error) {
       console.log(error);
     }
+  };
 
-    var UsedBookDetail = [];
-    UsedBookDetail.forEach((UsedBook) => {
-      const UsedBookDetail = useUsedBookDetail(UsedBook.UsedBookID);
-      UsedBookDetail.push(UsedBookDetail);
-    });
-  }, []);
+  const getUsedBookDetail = async () => {
+    var UsedBookDetails = [];
+    for (var i = 0; i < sellerData.length; i++) {
+      try {
+        const UsedBookDetailData = await useUsedBookDetail(
+          sellerData[i].UsedBookID
+        );
+        UsedBookDetails.push(UsedBookDetailData);
+      } catch (error) {
+        console.log(error.error);
+      }
+    }
+    setUsedBookDetail(UsedBookDetails);
+  };
 
+  const chips = usedBookData?.Genres?.map((Genre) => (
+    <Chip variant="ghost" value={Genre} size="sm" />
+  ));
+  const information = sellerData?.filter(
+    (seller) => seller.UsedBookID == selected
+  )[0];
+  useEffect(() => {
+    if (information) {
+      useRequestInfo();
+    }
+  }, [information, selected]);
+
+  const useRequestInfo = async () => {
+    try {
+      const RequestInfoData = await useGetRequestsOfAUser(
+        cookies.token,
+        information?.UsedBookID
+      );
+      setRequestInfo(RequestInfoData.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleBuyNow = async () => {
+    try {
+      const response = await usePostPurchaseReqest(
+        cookies.token,
+        information.UsedBookID
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log(information);
   return (
     <div className="flex flex-col gap-6 w-[80vw] justify-center items-center">
       <div className="flex flex-row gap-6">
@@ -174,13 +193,14 @@ export default function BookDetail() {
           </CardHeader>
           <CardBody className="w-full">
             <Typography variant="h4" color="blue-gray" className="mb-2">
-              {BookInfoData?.Title}
+              {usedBookData?.Title}
             </Typography>
             <Typography color="blue-gray" className="mb-2 font-medium">
-              {BookInfoData?.AuthorName}, {BookInfoData?.Edition}th Edition
+              {usedBookData?.Author}
             </Typography>
+
             <Typography color="blue-gray" className="mb-8 font-medium">
-              {BookInfoData?.PublisherName}
+              {usedBookData?.Publisher}
             </Typography>
             <Typography
               variant="h5"
@@ -194,15 +214,16 @@ export default function BookDetail() {
               {information?.BookCondition} 成新
             </Typography>
 
-            <div className="flex flex-row gap-1 w-full">
-              <Chip variant="ghost" value={BookInfoData?.Genre} size="sm" />
-            </div>
+            <div className="flex flex-row gap-1 w-full">{chips}</div>
             <div className="py-12">
-              <Button>Buy Now</Button>
+              <Button
+                onClick={handleBuyNow}
+                disabled={request}
+                variant="gradient"
+              >
+                Buy Now
+              </Button>
             </div>
-            <Typography color="blue-gray" className="mb-4 text-xs">
-              Listed At {information?.ListTimestamp.substring(0, 10)}
-            </Typography>
           </CardBody>
         </Card>
 
@@ -210,32 +231,44 @@ export default function BookDetail() {
           <List>
             <Typography variant="h4">Sellers</Typography>
             <List className="flex flex-row flex-wrap h-[40vh] justify-between flex-wrap overflow-auto no-scrollbar">
-              {sellers}
+              {sellers?.length > 0 ? (
+                sellers
+              ) : (
+                <ListItem disabled>
+                  <div className="flex text-center justify-center items-center w-full h-full">
+                    <Typography variant="h6" color="blue-gray">
+                      No Seller
+                    </Typography>
+                  </div>
+                </ListItem>
+              )}
             </List>
           </List>
         </Card>
       </div>
-      <Card className="max-h-[40vh] w-[50vw]">
-        <CardHeader shadow={false} floated={false}>
-          <Typography variant="h4">Comments</Typography>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-4">
-          <List className="flex flex-row flex-wrap justify-between flex-wrap overflow-auto no-scrollbar">
-            {comments}
-          </List>
-          <form onSubmit={submitComment}>
-            <Input
-              placeholder="Add a comment"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-              onChange={(e) => setComment(e.target.value)}
-              value={comment}
-            />
-          </form>
-        </CardBody>
-      </Card>
+      {selected && (
+        <Card className="max-h-[40vh] w-[50vw]">
+          <CardHeader shadow={false} floated={false}>
+            <Typography variant="h4">Comments</Typography>
+          </CardHeader>
+          <CardBody className="flex flex-col gap-4 ">
+            <List className="flex flex-row flex-wrap justify-between flex-wrap overflow-auto no-scrollbar max-h-[20vh]">
+              {comments.reverse()}
+            </List>
+            <form onSubmit={submitComment}>
+              <Input
+                placeholder="Add a comment"
+                className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+                labelProps={{
+                  className: "before:content-none after:content-none",
+                }}
+                onChange={(e) => setComment(e.target.value)}
+                value={comment}
+              />
+            </form>
+          </CardBody>
+        </Card>
+      )}
     </div>
   );
 }
