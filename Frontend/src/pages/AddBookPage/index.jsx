@@ -21,7 +21,6 @@ import { useRouter } from "next/router";
 import { useCookies } from "react-cookie";
 import usePostUsedBook from "../../hooks/usePostUsedBook";
 import useSearchBooks from "../../hooks/useSearchBooks";
-import { stringify } from "querystring";
 
 export default function AddNewBookPage() {
   const [image, setImage] = useState(null);

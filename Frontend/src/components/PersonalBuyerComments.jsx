@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import Rating from "@mui/material/Rating";
 
-const TABLE_HEAD = ["Listed Books", "Order Placed Date", "Rating", "Comment"];
+const TABLE_HEAD = ["Buyer", "Rating", "Comment"];
 
 export default function PersonalBuyerComments({ userFullProfile }) {
   const [TABLE_ROWS, setTABLE_ROWS] = useState();
@@ -65,62 +65,33 @@ export default function PersonalBuyerComments({ userFullProfile }) {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS?.map(
-              ({ img, title, amount, date, rating, comment }, index) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
+            {TABLE_ROWS?.map(({ studentID, StarsCount, Review }, index) => {
+              const isLast = index === TABLE_ROWS.length - 1;
+              const classes = isLast
+                ? "p-4"
+                : "p-4 border-b border-blue-gray-50";
 
-                return (
-                  <tr key={title}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={img}
-                          alt={title}
-                          size="md"
-                          className="border border-blue-gray-50 bg-blue-gray-50/50 object-fit p-1"
-                        />
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-bold"
-                        >
-                          {title}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {amount}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {date}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Rating name="read-only" value={rating} readOnly />
-                    </td>
-                    <td className={classes}>
-                      <article className="flex flex-wrap w-80">
-                        {comment}
-                      </article>
-                    </td>
-                  </tr>
-                );
-              }
-            )}
+              return (
+                <tr key={Review}>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal leading-none opacity-70"
+                    >
+                      {studentID}
+                    </Typography>
+                  </td>
+                  <td className={classes}>
+                    <Rating name="read-only" value={StarsCount} readOnly />
+                  </td>
+                  <td className={classes}>
+                    <article className="flex flex-wrap w-80">{Review}</article>
+                  </td>
+                </tr>
+              );
+            })}
+
             {!TABLE_ROWS && (
               <tr>
                 <td className="p-4 text-center" colSpan={6}>

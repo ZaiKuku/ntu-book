@@ -26,13 +26,14 @@ const TABLE_HEAD = [
 ];
 import useDeleteRequest from "../hooks/useDeleteRequest";
 import { useCookies } from "react-cookie";
+import usePostRating from "../hooks/usePostRating";
 
 export default function PersonalBuyerTable({ userFullProfile }) {
   const router = useRouter();
   const [cookies, setCookie] = useCookies(["token"]);
   const [stars, setStars] = useState(0);
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
-
+  const [selected, setSelected] = useState();
   const [TABLE_ROWS, setTABLE_ROWS] = useState([]);
 
   useEffect(() => {
@@ -41,13 +42,14 @@ export default function PersonalBuyerTable({ userFullProfile }) {
     }
   }, [userFullProfile]);
 
-  const submitComment = (e) => {
+  const submitComment = async (e) => {
     e.preventDefault();
     const body = {
-      Comment: e.target.Comment.value,
-      Rating: stars,
+      Review: e.target.Comment.value,
+      StarsCount: stars,
     };
-    console.log(body);
+    const response = await usePostRating(body, cookies.token, selected);
+    console.log(response);
     setOpenCommentDialog(false);
   };
 
@@ -128,7 +130,7 @@ export default function PersonalBuyerTable({ userFullProfile }) {
                           variant="ghost"
                           value={Status}
                           color={
-                            Status === "Finished"
+                            Status === "Purchased"
                               ? "green"
                               : Status === "Pending"
                               ? "amber"
@@ -143,8 +145,11 @@ export default function PersonalBuyerTable({ userFullProfile }) {
                       <Button
                         size="sm"
                         className="bg-[#787878]"
-                        onClick={() => setOpenCommentDialog(true)}
-                        disabled={Status !== "Finished"}
+                        onClick={() => {
+                          setSelected(UsedBookID);
+                          setOpenCommentDialog(true);
+                        }}
+                        disabled={Status !== "Purchased"}
                       >
                         Rating
                       </Button>

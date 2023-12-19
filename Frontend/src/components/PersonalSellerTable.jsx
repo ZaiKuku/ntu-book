@@ -12,6 +12,7 @@ import {
   Input,
   Dialog,
   List,
+  ListItem,
 } from "@material-tailwind/react";
 import { useState } from "react";
 
@@ -20,7 +21,7 @@ const TABLE_HEAD = ["Listed Books", "Price", "Buyers"];
 import { useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
-import useGetRequestsOfAUser from "../hooks/useGetRequestsOfAUser";
+import useGetUsedBookRequests from "../hooks/useGetUsedBookRequests";
 import usePostPurchase from "../hooks/usePostPurchase";
 
 export default function PersonalSellerTable({ userFullProfile }) {
@@ -43,8 +44,8 @@ export default function PersonalSellerTable({ userFullProfile }) {
   }, [userFullProfile]);
 
   const getRequests = async (ID) => {
-    const response = await useGetRequestsOfAUser(cookies.token, ID);
-    console.log(response);
+    const response = await useGetUsedBookRequests(ID, cookies.token);
+    setRequestInfo(response.data);
   };
 
   const handleOpen = async (ID) => {
@@ -59,25 +60,30 @@ export default function PersonalSellerTable({ userFullProfile }) {
     };
     const response = await usePostPurchase(body, cookies.token, UsedBookID);
     console.log(response);
+    router.reload();
   };
 
   useEffect(() => {
     if (requestInfo) {
       setBuyers(
         requestInfo.map((buyer) => (
-          <ListItem key={buyer.BuyerID}>
-            <ListItemPrefix>
-              <Avatar variant="circular" alt="candice" src="/user.png" />
-            </ListItemPrefix>
+          <ListItem
+            key={buyer.BuyerID}
+            className="flex justify-between h-16 border-b border-blue-gray-500"
+          >
             <div>
               <Typography variant="h6" color="blue-gray">
                 {buyer.BuyerID}
               </Typography>
               <Typography variant="small" color="gray" className="font-normal">
-                {buyer.BuyerID}
+                {buyer.RequestDate}
               </Typography>
             </div>
-            <Button name="Accept" size="sm" onClick={(BuyerID) => onAccept()}>
+            <Button
+              name="Accept"
+              size="sm"
+              onClick={() => onAccept(selected, buyer.BuyerID)}
+            >
               Accept
             </Button>
           </ListItem>
@@ -187,10 +193,16 @@ export default function PersonalSellerTable({ userFullProfile }) {
           handler={setOpen}
           className="bg-transparent shadow-none"
         >
-          <Card className="w-full max-w-[52rem] flex-row bg-gray-200">
-            <List className="flex flex-row flex-wrap h-[40vh] justify-between flex-wrap overflow-auto no-scrollbar">
-              {buyers}
-            </List>
+          <Card className="w-full max-w-[52rem] flex-col bg-gray-200">
+            <Typography variant="h5" color="blue-gray" className="p-4">
+              Buyers
+            </Typography>
+
+            <CardBody className="w-full flex flex-col">
+              <List className="flex flex-row flex-wrap h-[40vh] justify-between flex-wrap overflow-auto no-scrollbar w-full bg-gray-300">
+                {buyers}
+              </List>
+            </CardBody>
           </Card>
         </Dialog>
       </>
