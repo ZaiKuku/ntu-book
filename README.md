@@ -58,7 +58,7 @@ Make sure [Node.js](https://nodejs.org/) is installed before proceeding.
 
   - Log in with the following credentials:
     - Username: admin
-    - Password: password (Can be changed in the .env)
+    - Password: .env file's ADMIN_PASSWORD
   - After logging in, navigate to `/AdminPage`.
 
 ### Notes
