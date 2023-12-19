@@ -24,16 +24,15 @@ export async function authorization(req, res, next) {
             return res.status(403).json(failedResponse);
         } else {
             decodedUser = decoded;
+            if (!decodedUser || !decodedUser.id) {
+                return res.status(403).json(failedResponse);
+            }
         }
     });
 
-    if (!decodedUser || !decodedUser.id) {
-        return res.status(403).json(failedResponse);
-    }
-
     req.authorization_id = decodedUser.id;
-
     next();
+    
 }
 
 export function generateJWT(user_id) {
