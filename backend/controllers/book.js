@@ -11,7 +11,6 @@ export const searchBooks = async (req, res) => {
       .status(400)
       .json({ error: "At least one search parameter is required." });
   }
-  console.log("isbn: " + isbn);
 
   let db;
   try {    
