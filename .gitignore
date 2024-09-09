@@ -39,9 +39,13 @@ next-env.d.ts
 *.pdf
 node_modules
 .env
-package.json
 package-lock.json
 .env*.local
 .DS_Store
 /.vscode
+
+
+/backend/node_modules
+/backend/.env
+/backend/yarn.lock
 

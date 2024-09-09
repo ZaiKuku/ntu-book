@@ -3,8 +3,9 @@ import axios from "axios";
 import sweetAlert from "sweetalert";
 
 export default function useSignUp(body) {
-  const api = process.env.API_URL;
-  const apiUrl = `${api}/users/signup`;
+  // const api = process.env.API_URL;
+  const api = "http://127.0.0.1:8000";
+  const apiUrl = `${api}/api/users/register`;
 
   const fetchData = async () => {
     try {
@@ -16,6 +17,7 @@ export default function useSignUp(body) {
 
       if (response.status === 200) {
         console.log(response);
+        return response.data;
         // 處理獲得的資料
       } else {
         console.error("Error:", response.status);
